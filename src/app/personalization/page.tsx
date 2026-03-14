@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { AlertTriangle, BellRing, CheckCircle2, Loader2, Sparkles, X } from "lucide-react";
 import { supabase } from "../../../lib/superbaseClient";
 import {
@@ -66,6 +66,7 @@ const AVAILABLE_TOPICS = [
 ];
 
 const MAX_TOPICS = 10;
+const INITIAL_VISIBLE_TOPICS = 15;
 const DEFAULT_TOPIC_SELECTION = [
   "Top Headlines",
   "Technology",
@@ -89,16 +90,16 @@ function toggleValue(current: string[], value: string): string[] {
   return [...current, value];
 }
 
-const sectionVariants = {
+const sectionVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
+  visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] },
+    transition: { duration: 0.5, delay: i * 0.08 },
   }),
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: { opacity: 1, y: 0, scale: 1 },
 };
@@ -117,6 +118,7 @@ export default function PersonalizationPage() {
   const [suggestions, setSuggestions] = useState<TopicSuggestion[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [aiElapsedSeconds, setAiElapsedSeconds] = useState(0);
+  const [showAllTopics, setShowAllTopics] = useState(false);
 
   const hasSelection = useMemo(
     () => favoriteSources.length > 0 || favoriteTopics.length > 0,
@@ -130,6 +132,15 @@ export default function PersonalizationPage() {
       ),
     [topicSearch],
   );
+
+  const visibleTopics = useMemo(() => {
+    if (topicSearch.trim()) return filteredTopics;
+    if (showAllTopics) return filteredTopics;
+    return filteredTopics.slice(0, INITIAL_VISIBLE_TOPICS);
+  }, [filteredTopics, showAllTopics, topicSearch]);
+
+  const shouldShowMoreTopicsButton =
+    !topicSearch.trim() && !showAllTopics && filteredTopics.length > INITIAL_VISIBLE_TOPICS;
 
   const aiLoadingMessage = useMemo(() => {
     if (aiElapsedSeconds < 4) return AI_LOADING_STEPS[0];
@@ -296,10 +307,23 @@ export default function PersonalizationPage() {
     setPopupMessage(null);
 
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setPopupMessage({
+          tone: "error",
+          text: "Please log in again to get AI suggestions.",
+        });
+        return;
+      }
+
       const response = await fetch("/api/topic-suggestions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           availableTopics: AVAILABLE_TOPICS,
@@ -533,7 +557,7 @@ export default function PersonalizationPage() {
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredTopics.map((topic, index) => {
+            {visibleTopics.map((topic, index) => {
               const isSelected = favoriteTopics.includes(topic);
               const isDisabled =
                 !isSelected && favoriteTopics.length >= MAX_TOPICS;
@@ -568,6 +592,18 @@ export default function PersonalizationPage() {
               );
             })}
           </div>
+
+          {shouldShowMoreTopicsButton && (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowAllTopics(true)}
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-[var(--primary)] hover:text-[var(--primary)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              >
+                See more options
+              </button>
+            </div>
+          )}
 
           {filteredTopics.length === 0 && (
             <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">

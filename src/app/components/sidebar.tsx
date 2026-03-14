@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -50,8 +50,12 @@ import {
 import {
   DEFAULT_APPEARANCE_SETTINGS,
   applyAppearanceSettings,
+  removeAppearanceSettings,
 } from "@/lib/appearance";
-import { applyDarkMode } from "@/lib/accountSettings";
+import {
+  applyDarkMode,
+  removeStoredAccountSettings,
+} from "@/lib/accountSettings";
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -138,6 +142,8 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   };
 
   const clearSession = () => {
+    const currentUserEmail = localStorage.getItem("auth_email");
+    removeStoredAccountSettings(currentUserEmail);
     localStorage.removeItem("auth_email");
     localStorage.removeItem("auth_token");
     document.cookie = "auth_token=; path=/; max-age=0; samesite=lax";
@@ -158,11 +164,6 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
       }
     };
 
-    const storedToken = localStorage.getItem("auth_token");
-    if (storedToken) {
-      setIsAuthenticated(true);
-      document.cookie = `auth_token=${encodeURIComponent(storedToken)}; path=/; max-age=604800; samesite=lax`;
-    }
     const storedEmail = localStorage.getItem("auth_email");
     if (storedEmail) setUserEmail(storedEmail);
 
@@ -292,6 +293,7 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
 
 // ─── Snake Register Button ────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SnakeRegisterButton({ onClick }: { onClick: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
@@ -481,11 +483,17 @@ function SidebarContent({
     effectiveTopicSet.has(item.topic.toLowerCase()),
   );
   const handleSignOut = async () => {
+    const currentUserEmail = userEmail || localStorage.getItem("auth_email") || "";
+
     try {
       await supabase.auth.signOut();
     } finally {
       document.cookie = "auth_token=; path=/; max-age=0; samesite=lax";
-      localStorage.clear();
+      removeAppearanceSettings(currentUserEmail);
+      removeStoredAccountSettings(currentUserEmail);
+      localStorage.removeItem("auth_email");
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("app_dark_mode");
       applyDarkMode(false);
       applyAppearanceSettings(DEFAULT_APPEARANCE_SETTINGS);
       onCloseMobile();
@@ -668,6 +676,8 @@ function SidebarContent({
                     : `https://ui-avatars.com/api/?name=User&background=random`
                 }
                 alt="User Avatar"
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full border-2 border-gray-200"
               />
               <div className="flex-1 min-w-0">
@@ -710,7 +720,14 @@ function SidebarContent({
             )}
           </div>
         ) : (
-          <SnakeRegisterButton onClick={closeAndNavigate} />
+          <Link
+            href="/auth/register"
+            onClick={closeAndNavigate}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--primary)] bg-transparent px-4 py-2 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
+          >
+            <UserPlus size={16} />
+            <span>Create Account</span>
+          </Link>
         )}
       </div>
     </>
