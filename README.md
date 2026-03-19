@@ -20,6 +20,10 @@ The project focuses on clean component architecture, reusable UI components, and
 
 Through this project, I gained strong experience with Next.js routing, API integration, SSR/CSR concepts, and frontend optimization, along with improving my ability to structure scalable React applications.
 
+## Marketing Poster
+
+![image alt](https://github.com/GalibMorsed/NextNews/blob/d4729ba5fd4eb45ba185b3f44175f9bdd1223fb3/public/NextNews-Poster.png)
+
 ## CI/CD Pipelines
 
 This repository keeps a small GitHub Actions setup focused on Docker release flow.
@@ -61,7 +65,3 @@ If these are not set, the workflows fall back to safe placeholder values for CI 
 
 - The production Docker image is built from the standalone Next.js output for a smaller and safer runtime container.
 - If you later want validation, automated server deployment, preview environments, or security scans, those can be added back as separate workflows.
-
-## Marketing Poster
-
-![image alt](https://github.com/GalibMorsed/NextNews/blob/d4729ba5fd4eb45ba185b3f44175f9bdd1223fb3/public/NextNews-Poster.png)
