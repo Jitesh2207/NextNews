@@ -45,7 +45,11 @@ export default async function CategoryPage({
 
   return (
     <main className="p-6">
-      <CategoryContent category={category} initialArticles={articles} pageSize={20} />
+      <CategoryContent
+        category={category}
+        initialArticles={articles}
+        pageSize={20}
+      />
     </main>
   );
 }
