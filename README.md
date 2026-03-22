@@ -1,17 +1,3 @@
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
 ## Learn More
 
 NextNews is a modern news web application built using Next.js and React that allows users to explore the latest news articles in a fast and responsive interface. The application fetches real-time news data from external APIs and displays them using dynamic routing and server-side rendering to improve performance and SEO.
