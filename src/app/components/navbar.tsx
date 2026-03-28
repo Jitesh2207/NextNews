@@ -7,6 +7,7 @@ import { Menu, X, StickyNote } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { supabase } from "../../../lib/superbaseClient";
 import { getVerifiedAuthUser } from "@/lib/clientAuth";
+import MemberDropdownMenu from "./memberDropdownMenu";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -55,28 +56,34 @@ export default function Navbar({ onMenuToggle, isMobileOpen }: NavbarProps) {
       className="sticky top-0 z-30 flex items-center justify-between border-b border-[var(--border)] bg-white px-4 py-4 md:px-6"
       style={{ backgroundColor: "var(--card)" }}
     >
-      {/* Logo */}
-      <Link
-        href="/"
-        className="flex items-center gap-2 transition-opacity hover:opacity-80"
-      >
-        <span className="inline-flex rounded-xl bg-white/90 p-1.5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800/80 dark:ring-slate-700">
-          <Image
-            src="/nav-logo.jpg"
-            alt="NextNews logo"
-            width={40}
-            height={40}
-            className="h-8 w-8 rounded-md object-cover dark:brightness-110 dark:contrast-110"
-            priority
-          />
-        </span>
-        <span className="text-2xl font-light italic tracking-wide text-[var(--foreground)]">
-          NextNews
-        </span>
-      </Link>
+      <div className="flex min-w-0 flex-1 items-center">
+        <Link
+          href="/"
+          className="flex min-w-0 items-center gap-2 transition-opacity hover:opacity-80"
+        >
+          <span className="inline-flex rounded-xl bg-white/90 p-1.5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-800/80 dark:ring-slate-700">
+            <Image
+              src="/nav-logo.jpg"
+              alt="NextNews logo"
+              width={40}
+              height={40}
+              className="h-8 w-8 rounded-md object-cover dark:brightness-110 dark:contrast-110"
+              priority
+            />
+          </span>
+          <span className="truncate text-xl font-light italic tracking-wide text-[var(--foreground)] sm:text-2xl">
+            NextNews
+          </span>
+        </Link>
+      </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-4">
+      <div className="hidden flex-1 justify-center px-2 md:flex">
+        {isAuthenticated ? <MemberDropdownMenu /> : null}
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+        {isAuthenticated ? <MemberDropdownMenu className="md:hidden" /> : null}
+
         <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
             <Link
