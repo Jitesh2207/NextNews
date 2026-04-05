@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   AlertTriangle,
   ArrowRight,
-  BellRing,
-  CheckCircle2,
   Loader2,
   Save,
   Trash2,
@@ -21,6 +18,7 @@ import {
   saveUserPersonalization,
 } from "../services/personalizationService";
 import PersonalizationAiSuggestions from "../components/personalizationAiSuggestions";
+import StatusPopup from "../components/statusPopup";
 
 type PopupMessage = {
   tone: "success" | "error" | "info";
@@ -430,10 +428,11 @@ export default function PersonalizationPage() {
                 <motion.label
                   key={source}
                   whileHover={{ scale: 1.01 }}
-                  className={`group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-5 transition-all hover:border-[var(--primary)] hover:shadow-sm ${isSelected
-                    ? "border-[var(--primary)] bg-[var(--primary)]/10 dark:bg-[var(--primary)]/15"
-                    : ""
-                    }`}
+                  className={`group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-5 transition-all hover:border-[var(--primary)] hover:shadow-sm ${
+                    isSelected
+                      ? "border-[var(--primary)] bg-[var(--primary)]/10 dark:bg-[var(--primary)]/15"
+                      : ""
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -514,12 +513,13 @@ export default function PersonalizationPage() {
                   animate="visible"
                   transition={{ delay: index * 0.015 }}
                   whileHover={{ scale: 1.015 }}
-                  className={`group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 px-5 py-4 transition-all hover:border-[var(--primary)] hover:shadow ${isSelected
-                    ? "border-[var(--primary)] bg-[var(--primary)]/10 dark:bg-[var(--primary)]/15 shadow-sm"
-                    : isDisabled
-                      ? "opacity-40"
-                      : ""
-                    }`}
+                  className={`group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 px-5 py-4 transition-all hover:border-[var(--primary)] hover:shadow ${
+                    isSelected
+                      ? "border-[var(--primary)] bg-[var(--primary)]/10 dark:bg-[var(--primary)]/15 shadow-sm"
+                      : isDisabled
+                        ? "opacity-40"
+                        : ""
+                  }`}
                 >
                   <input
                     type="checkbox"
@@ -593,7 +593,8 @@ export default function PersonalizationPage() {
                 No favorites selected
               </p>
               <p className="mt-1 max-w-[280px] text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Your personalized feed will appear here once you select and save your preferred sources and topics.
+                Your personalized feed will appear here once you select and save
+                your preferred sources and topics.
               </p>
             </div>
           ) : (
@@ -749,104 +750,23 @@ export default function PersonalizationPage() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {popupMessage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/30 backdrop-blur-sm"
-            onClick={() => setPopupMessage(null)}
-          >
-            <motion.div
-              variants={isMobile ? mobilePopupVariants : desktopPopupVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
-              className={`relative w-full overflow-hidden rounded-t-2xl shadow-xl sm:rounded-[28px] ${popupMessage.tone === "success"
-                ? "sm:max-w-lg border border-emerald-200/70 bg-white/95 p-0 dark:border-emerald-500/20 dark:bg-slate-900/95"
-                : "sm:max-w-md bg-white p-5 dark:bg-slate-800 sm:p-6"
-                }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {popupMessage.tone === "success" ? (
-                <>
-                  <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-emerald-400/20 via-sky-300/20 to-cyan-300/20 dark:from-emerald-400/10 dark:via-sky-400/10 dark:to-cyan-400/10" />
-                  <div className="absolute -right-10 top-8 h-32 w-32 rounded-full bg-emerald-300/20 blur-3xl dark:bg-emerald-400/10" />
-                  <div className="relative p-6 sm:p-7">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
-                          <CheckCircle2 className="h-7 w-7" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600 dark:text-emerald-300">
-                            Preferences Updated
-                          </p>
-                          <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">
-                            Ready for a fresh start!
-                          </h3>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setPopupMessage(null)}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-400 transition hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-slate-600 dark:hover:text-slate-200"
-                        aria-label="Close message"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-4 dark:border-emerald-500/10 dark:from-emerald-500/10 dark:via-slate-900 dark:to-sky-500/10">
-                      <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">
-                        {popupMessage.text}
-                      </p>
-                    </div>
-
-                    <div className="mt-5 flex justify-end">
-                      <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                      >
-                        Go Home
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${popupMessage.tone === "info"
-                      ? "bg-sky-100 text-sky-600"
-                      : "bg-red-100 text-red-600"
-                      }`}
-                  >
-                    {popupMessage.tone === "info" ? (
-                      <BellRing className="h-5 w-5" />
-                    ) : (
-                      <AlertTriangle className="h-5 w-5" />
-                    )}
-                  </div>
-                  <p className="flex-1 text-sm font-medium text-slate-800 dark:text-slate-100">
-                    {popupMessage.text}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setPopupMessage(null)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-                    aria-label="Close message"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <StatusPopup
+        isOpen={Boolean(popupMessage)}
+        tone={popupMessage?.tone ?? "success"}
+        message={popupMessage?.text ?? ""}
+        onClose={() => setPopupMessage(null)}
+        context="personalization"
+        isMobile={isMobile}
+        action={
+          popupMessage?.tone === "success"
+            ? {
+                label: "Go Home",
+                href: "/",
+                icon: <ArrowRight className="h-4 w-4" />,
+              }
+            : undefined
+        }
+      />
 
       <AnimatePresence>
         {isDeletePopupOpen && (

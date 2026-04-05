@@ -137,7 +137,7 @@ export default function PersonalizationAiSuggestions({
           type="button"
           onClick={handleGetAiSuggestions}
           disabled={isSuggesting}
-          className="group relative inline-flex w-fit items-center gap-2 self-center overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/40 disabled:cursor-not-allowed disabled:opacity-70 lg:self-auto"
+          className="group relative inline-flex w-fit items-center gap-2 self-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-500 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-70 lg:self-auto"
         >
           {/* Shimmer sweep effect */}
           <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full" />

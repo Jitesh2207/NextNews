@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import {
   DEFAULT_APPEARANCE_SETTINGS,
   applyAppearanceSettings,
@@ -11,6 +11,7 @@ import {
   saveAppearanceSettings,
   type AppearanceSettings,
 } from "@/lib/appearance";
+import StatusPopup from "../components/statusPopup";
 
 const PRESET_THEMES = [
   { id: "indigo", label: "Soft Indigo", color: "#4f46e5" },
@@ -60,7 +61,6 @@ export default function AppearancePage() {
     DEFAULT_APPEARANCE_SETTINGS.highContrast,
   );
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [hasLoadedStoredSettings, setHasLoadedStoredSettings] = useState(false);
 
   const currentSettings = useMemo<AppearanceSettings>(
@@ -96,14 +96,6 @@ export default function AppearancePage() {
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  // Check for mobile view
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Auto-dismiss popup message
@@ -146,18 +138,6 @@ export default function AppearancePage() {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-  };
-
-  const desktopVariants = {
-    initial: { opacity: 0, y: 20, scale: 0.95 },
-    animate: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: 20, scale: 0.95 },
-  };
-
-  const mobileVariants = {
-    initial: { opacity: 0, y: "100%" },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: "100%" },
   };
 
   return (
@@ -383,7 +363,8 @@ export default function AppearancePage() {
               Accessibility & Motion
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Customize your browsing experience for better focus and readability
+              Customize your browsing experience for better focus and
+              readability
             </p>
           </div>
 
@@ -455,62 +436,13 @@ export default function AppearancePage() {
         </div>
       </motion.div>
 
-      <AnimatePresence>
-        {popupMessage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-6"
-            onClick={() => setPopupMessage(null)}
-          >
-            <motion.div
-              variants={isMobile ? mobileVariants : desktopVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
-              className="relative w-full overflow-hidden rounded-t-2xl border border-emerald-200/70 bg-white/95 shadow-xl dark:border-emerald-500/20 dark:bg-slate-900/95 sm:max-w-md sm:rounded-[28px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-emerald-400/20 via-sky-300/20 to-cyan-300/20 dark:from-emerald-400/10 dark:via-sky-400/10 dark:to-cyan-400/10" />
-              <div className="absolute -right-10 top-8 h-32 w-32 rounded-full bg-emerald-300/20 blur-3xl dark:bg-emerald-400/10" />
-              <div className="relative px-4 pb-5 pt-4 sm:p-7">
-                <div className="flex items-start justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setPopupMessage(null)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-400 transition hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-slate-600 dark:hover:text-slate-200"
-                    aria-label="Close message"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="mt-1 flex flex-col items-center text-center sm:mt-0 sm:flex-row sm:items-center sm:gap-4 sm:text-left">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
-                    <Check size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600 dark:text-emerald-300">
-                      Appearance Updated
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">
-                      Changes saved
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-4 text-center dark:border-emerald-500/10 dark:from-emerald-500/10 dark:via-slate-900 dark:to-sky-500/10 sm:text-left">
-                  <p className="text-sm font-medium leading-6 text-slate-700 dark:text-slate-200">
-                    {popupMessage}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <StatusPopup
+        isOpen={Boolean(popupMessage)}
+        tone="success"
+        message={popupMessage ?? ""}
+        onClose={() => setPopupMessage(null)}
+        context="appearance"
+      />
     </>
   );
 }
