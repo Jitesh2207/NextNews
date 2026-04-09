@@ -327,7 +327,7 @@ export default function MyActivityPage() {
 
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 4)
       .map(([topic, count]) => ({
         topic,
         count,

@@ -7,8 +7,11 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_REQUESTS = 6;
 
 type RegionSuggestion = {
-  id: ExploreRegionId;
+  label: string;
   reason: string;
+  query: string;
+  countryCode: string;
+  mappedRegionId?: ExploreRegionId;
 };
 
 type RegionSuggestionsPayload = {
@@ -57,29 +60,56 @@ async function fetchHeadlineSignals(): Promise<string[]> {
 function normalizeSuggestions(raw: unknown): RegionSuggestion[] {
   if (!Array.isArray(raw)) return [];
 
-  const allowedRegions = new Map(
+  const knownRegions = new Map(
     EXPLORE_REGIONS.map((region) => [
       region.id,
       { id: region.id, label: region.label },
     ]),
   );
-  const seen = new Set<ExploreRegionId>();
+  const seen = new Set<string>();
   const normalized: RegionSuggestion[] = [];
 
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
 
     const id = safeTrim((item as { id?: unknown }).id) as ExploreRegionId;
+    const label = safeTrim((item as { label?: unknown }).label);
     const reason = safeTrim((item as { reason?: unknown }).reason);
-    const region = allowedRegions.get(id);
+    const query = safeTrim((item as { query?: unknown }).query);
+    const countryCode = safeTrim(
+      (item as { countryCode?: unknown }).countryCode,
+    ).toUpperCase();
+    const mappedRegionId = safeTrim(
+      (item as { mappedRegionId?: unknown }).mappedRegionId,
+    ) as ExploreRegionId;
+    const mappedRegion = knownRegions.get(mappedRegionId);
+    const legacyRegion = knownRegions.get(id);
+    const resolvedLabel = label || mappedRegion?.label || legacyRegion?.label;
+    const resolvedQuery = query || resolvedLabel;
 
-    if (!region || seen.has(region.id)) continue;
+    if (
+      !resolvedLabel ||
+      !resolvedQuery ||
+      !/^[A-Z]{2}$/.test(countryCode)
+    ) {
+      continue;
+    }
 
-    seen.add(region.id);
+    const dedupeKey = `${resolvedLabel.toLowerCase()}::${resolvedQuery.toLowerCase()}`;
+
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+
+    seen.add(dedupeKey);
     normalized.push({
-      id: region.id,
+      label: resolvedLabel,
       reason:
-        reason || `Recent coverage suggests ${region.label} deserves attention right now.`,
+        reason ||
+        `Recent coverage suggests ${resolvedLabel} deserves attention right now.`,
+      query: resolvedQuery,
+      countryCode,
+      mappedRegionId: mappedRegion?.id || legacyRegion?.id,
     });
   }
 
@@ -142,18 +172,24 @@ export async function POST(req: Request) {
       `Today is ${new Date().toISOString().slice(0, 10)}.`,
       `Current selected region: ${selectedRegion}.`,
       "",
-      "Allowed regions:",
+      "Known explore tabs you may optionally map to:",
       EXPLORE_REGIONS.map((region) => `${region.id}: ${region.label}`).join(", "),
       "",
       "Live headline signals:",
       signalText,
       "",
-      "Pick exactly 3 regions from the allowed list that look most important or active right now.",
+      "Pick exactly 3 regions, countries, or subregions that look most important or active right now.",
+      "Do not limit yourself to the existing explore tabs.",
+      "Base your answer on the live headline signals and choose the strongest current hotspots.",
+      "Prefer specific places when the story is concentrated there, like a country, territory, or conflict zone.",
+      "If one suggestion clearly belongs to an existing explore tab, include that tab in mappedRegionId. Otherwise use \"world\".",
+      "For each suggestion include countryCode as a 2-letter uppercase code usable by a flag library.",
+      "Use the most recognized flag for the named place. Examples: Ukraine=UA, Taiwan=TW, Gaza=PS, Kosovo=XK, Europe=EU, World=UN.",
       "Prefer variety and avoid repeating the currently selected region unless it is unusually dominant.",
       "Return ONLY valid JSON with this exact shape:",
       "{",
       '  "suggestions": [',
-      '    { "id": "allowed-region-id", "reason": "1 concise sentence" }',
+      '    { "label": "specific region name", "query": "search query for that region", "countryCode": "US", "mappedRegionId": "world", "reason": "1 concise sentence" }',
       "  ]",
       "}",
     ].join("\n");

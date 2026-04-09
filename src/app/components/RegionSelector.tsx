@@ -2,32 +2,70 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Compass, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { Compass, Sparkles, Loader2, ArrowRight, Globe2 } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
 import { EXPLORE_REGIONS, type ExploreRegionId } from "@/lib/explore";
 import { incrementRegionSuggestionUsage } from "@/lib/activityAnalytics";
+
+export interface AIRegionSuggestion {
+  label: string;
+  reason: string;
+  query: string;
+  countryCode: string;
+  mappedRegionId?: ExploreRegionId;
+}
 
 interface RegionSelectorProps {
   selectedRegion: ExploreRegionId;
   onRegionSelect: (regionId: ExploreRegionId) => void;
   onSearchPreferredRegion?: () => void;
-}
-
-interface AISuggestion {
-  id: ExploreRegionId;
-  label: string;
-  reason: string;
+  onAISuggestionSelect?: (suggestion: AIRegionSuggestion) => void;
 }
 
 function RegionFlag({
   id,
+  countryCode,
+  label,
   active,
   size = "md",
 }: {
-  id: ExploreRegionId;
+  id?: ExploreRegionId | null;
+  countryCode?: string | null;
+  label?: string;
   active?: boolean;
   size?: "sm" | "md";
 }) {
+  const sizeClasses = size === "sm" ? "h-4 w-5.5" : "h-5 w-7";
+
+  if (countryCode && /^[A-Z]{2}$/.test(countryCode)) {
+    return (
+      <div
+        className={`${sizeClasses} shrink-0 rounded-[3px] shadow-sm overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/10 ${active ? "ring-1 ring-white/30" : ""}`}
+      >
+        <ReactCountryFlag
+          countryCode={countryCode}
+          svg
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          aria-label={label || countryCode}
+        />
+      </div>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div
+        className={`${sizeClasses} shrink-0 rounded-[3px] shadow-sm overflow-hidden flex items-center justify-center border border-black/5 bg-slate-100 text-slate-500 dark:border-white/10 dark:bg-slate-800 dark:text-slate-300 ${active ? "ring-1 ring-white/30" : ""}`}
+      >
+        <Globe2 className="h-3.5 w-3.5" />
+      </div>
+    );
+  }
+
   // Direct mapping to representative ISO codes for the library
   const countryCodeMap: Record<string, string> = {
     world: "UN",
@@ -41,7 +79,6 @@ function RegionFlag({
   };
 
   const code = countryCodeMap[id] || "UN";
-  const sizeClasses = size === "sm" ? "h-4 w-5.5" : "h-5 w-7";
 
   return (
     <div
@@ -65,10 +102,11 @@ export default function RegionSelector({
   selectedRegion,
   onRegionSelect,
   onSearchPreferredRegion,
+  onAISuggestionSelect,
 }: RegionSelectorProps) {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<AIRegionSuggestion[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasActivePlan, setHasActivePlan] = useState(false);
 
@@ -124,7 +162,7 @@ export default function RegionSelector({
       });
 
       const payload = (await response.json()) as {
-        suggestions?: Array<{ id: ExploreRegionId; reason: string }>;
+        suggestions?: AIRegionSuggestion[];
         error?: string;
       };
 
@@ -138,20 +176,15 @@ export default function RegionSelector({
 
       const nextSuggestions = Array.isArray(payload.suggestions)
         ? payload.suggestions
-            .map((suggestion) => {
-              const region = EXPLORE_REGIONS.find(
-                (item) => item.id === suggestion.id,
-              );
-              if (!region) return null;
-
-              return {
-                id: suggestion.id,
-                label: region.label,
-                reason: suggestion.reason,
-              };
-            })
-            .filter((suggestion): suggestion is AISuggestion =>
-              Boolean(suggestion),
+            .filter(
+              (suggestion): suggestion is AIRegionSuggestion =>
+                Boolean(
+                  suggestion &&
+                    suggestion.label?.trim() &&
+                    suggestion.reason?.trim() &&
+                    suggestion.query?.trim() &&
+                    /^[A-Z]{2}$/.test(suggestion.countryCode?.trim() || ""),
+                ),
             )
         : [];
 
@@ -207,6 +240,7 @@ export default function RegionSelector({
                   >
                     <RegionFlag
                       id={region.id}
+                      label={region.label}
                       active={selectedRegion === region.id}
                       size="sm"
                     />
@@ -292,16 +326,23 @@ export default function RegionSelector({
                 <div className="w-full animate-fade-up grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {suggestions.map((suggestion) => (
                     <button
-                      key={suggestion.id}
+                      key={`${suggestion.label}-${suggestion.query}`}
                       onClick={() => {
-                        onRegionSelect(suggestion.id);
+                        if (suggestion.mappedRegionId) {
+                          onRegionSelect(suggestion.mappedRegionId);
+                        }
+                        onAISuggestionSelect?.(suggestion);
                         setShowSuggestions(false);
                       }}
                       className="group flex flex-col items-start p-6 text-left rounded-3xl border border-slate-200/60 bg-white shadow-sm transition-all hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/[0.02] hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/40 dark:hover:border-[var(--primary)]/40"
                     >
                       <div className="flex w-full items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <RegionFlag id={suggestion.id} />
+                          <RegionFlag
+                            id={suggestion.mappedRegionId}
+                            countryCode={suggestion.countryCode}
+                            label={suggestion.label}
+                          />
                           <span className="text-base font-bold tracking-tight text-[var(--foreground)]">
                             {suggestion.label}
                           </span>
