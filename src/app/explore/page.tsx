@@ -29,7 +29,7 @@ import {
   getUserPersonalization,
   saveUserPersonalization,
 } from "../services/personalizationService";
-import RegionSelector from "../components/RegionSelector";
+import RegionSelector, { type AIRegionSuggestion } from "../components/RegionSelector";
 
 type ExploreState = {
   data: ExploreResponse | null;
@@ -313,6 +313,15 @@ export default function ExplorePage() {
     }
   };
 
+  const handleAISuggestionSelect = (suggestion: AIRegionSuggestion) => {
+    const nextRegion = suggestion.mappedRegionId || "world";
+    const nextQuery = suggestion.query.trim();
+
+    setSelectedRegion(nextRegion);
+    setSearchInput(nextQuery);
+    setAppliedQuery(nextQuery);
+  };
+
   return (
     <main className="min-h-screen bg-[var(--background)] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -367,7 +376,7 @@ export default function ExplorePage() {
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                       <div className="max-w-3xl flex-1">
                         <span className="mb-3 inline-flex rounded-full bg-indigo-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
-                          World is Your's
+                          World is Yours
                         </span>
                         <h1 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-indigo-900 to-violet-900 sm:text-5xl dark:from-white dark:via-indigo-100 dark:to-violet-200">
                           Explore
@@ -392,6 +401,7 @@ export default function ExplorePage() {
                   selectedRegion={selectedRegion}
                   onRegionSelect={setSelectedRegion}
                   onSearchPreferredRegion={handleSearchPreferredRegion}
+                  onAISuggestionSelect={handleAISuggestionSelect}
                 />
               </motion.div>
 

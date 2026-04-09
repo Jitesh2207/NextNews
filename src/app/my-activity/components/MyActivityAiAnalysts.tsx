@@ -102,7 +102,7 @@ export default function MyActivityAiAnalysts({
 
           {mostSummarizedTopics.length > 0 ? (
             <div className="mt-4 space-y-4">
-              {mostSummarizedTopics.map((item) => (
+              {mostSummarizedTopics.slice(0, 4).map((item) => (
                 <div key={item.topic} className="space-y-2">
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <div className="min-w-0 truncate font-medium capitalize text-slate-800 dark:text-slate-100">
