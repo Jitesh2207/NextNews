@@ -14,7 +14,13 @@ import {
 import FeedbackToast from "../components/feedbackToast";
 
 export default function SupportPage() {
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const CONTACT_REGEX = /^[0-9+()\-\s]{7,20}$/;
+
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now());
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
   const [feedbackToastKey, setFeedbackToastKey] = useState(0);
@@ -25,6 +31,7 @@ export default function SupportPage() {
     name: "",
     email: "",
     contactNumber: "",
+    website: "",
   });
 
   const faqs = [
@@ -82,15 +89,72 @@ export default function SupportPage() {
   ];
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const name = formData.name.trim();
+      const email = formData.email.trim();
+      const contactNumber = formData.contactNumber.trim();
+
+      if (name.length < 2 || name.length > 80) {
+        throw new Error("Name must be between 2 and 80 characters");
+      }
+
+      if (!EMAIL_REGEX.test(email) || email.length > 120) {
+        throw new Error("Please provide a valid email address");
+      }
+
+      if (contactNumber && !CONTACT_REGEX.test(contactNumber)) {
+        throw new Error("Please provide a valid contact number");
+      }
+
+      const payload = {
+        name,
+        email,
+        subject: formData.issueType,
+        contactNumber,
+        website: formData.website,
+        formStartedAt,
+      };
+
+      const res = await fetch("/api/complaints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to submit request");
+      }
+
+      setSubmitted(true);
+      setFormData({
+        issueType: "",
+        name: "",
+        email: "",
+        contactNumber: "",
+        website: "",
+      });
+      setFormStartedAt(Date.now());
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : "Failed to submit request",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOptionClick = (title: string) => {
@@ -117,6 +181,12 @@ export default function SupportPage() {
   const openFeedbackToast = () => {
     setFeedbackToastKey((prev) => prev + 1);
     setIsFeedbackVisible(true);
+  };
+
+  const handleSubmitAnotherRequest = () => {
+    setSubmitted(false);
+    setSubmitError(null);
+    setFormStartedAt(Date.now());
   };
 
   return (
@@ -265,6 +335,19 @@ export default function SupportPage() {
 
                   {!submitted ? (
                     <form className="space-y-5" onSubmit={handleSubmit}>
+                      <div className="hidden" aria-hidden="true">
+                        <label htmlFor="support-website">Website</label>
+                        <input
+                          id="support-website"
+                          type="text"
+                          name="website"
+                          value={formData.website}
+                          onChange={handleChange}
+                          tabIndex={-1}
+                          autoComplete="off"
+                        />
+                      </div>
+
                       <div>
                         <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           Select Issue Type
@@ -335,12 +418,19 @@ export default function SupportPage() {
 
                       <motion.button
                         type="submit"
-                        className="w-full rounded-lg bg-teal-500 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-600 hover:shadow-lg active:bg-teal-700"
+                        disabled={isSubmitting}
+                        className="w-full rounded-lg bg-teal-500 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-teal-600 hover:shadow-lg active:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-70"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        Next
+                        {isSubmitting ? "Submitting..." : "Submit request"}
                       </motion.button>
+
+                      {submitError && (
+                        <p className="text-sm font-medium text-rose-600">
+                          {submitError}
+                        </p>
+                      )}
                     </form>
                   ) : (
                     <motion.div
@@ -362,7 +452,7 @@ export default function SupportPage() {
                       <div className="space-y-3">
                         <motion.button
                           type="button"
-                          onClick={() => setSubmitted(false)}
+                          onClick={handleSubmitAnotherRequest}
                           className="w-full rounded-lg bg-slate-100 py-3 font-semibold text-slate-900 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-200 hover:shadow-md dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
