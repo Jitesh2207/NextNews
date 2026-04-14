@@ -63,6 +63,11 @@ function getBearerToken(request: Request): string | null {
     return token || null;
 }
 
+function getApiKeyHeader(request: Request): string | null {
+    const apiKeyHeader = request.headers.get("apikey")?.trim();
+    return apiKeyHeader || null;
+}
+
 async function fetchTopHeadlines(country: string, maxArticles: number) {
     const apiKey =
         Deno.env.get("NEWS_API_KEY")?.trim() ||
@@ -269,13 +274,16 @@ Deno.serve(async (request: Request) => {
             return new Response("Method Not Allowed", { status: 405 });
         }
 
-        const cronSecret =
-            Deno.env.get("CRON_SECRET")?.trim() ||
-            Deno.env.get("SUPABASE_ANON_KEY")?.trim();
+        const anonKey = getEnv("SUPABASE_ANON_KEY");
         const bearerToken = getBearerToken(request);
+        const apiKeyHeader = getApiKeyHeader(request);
+        const providedToken = bearerToken || apiKeyHeader;
 
-        if (!cronSecret || !bearerToken || bearerToken !== cronSecret) {
-            return new Response("Unauthorized", { status: 401 });
+        if (!providedToken || providedToken !== anonKey) {
+            return new Response(
+                "Unauthorized. Use SUPABASE_ANON_KEY in Authorization Bearer header (or apikey header).",
+                { status: 401 },
+            );
         }
 
         const supabaseUrl = getEnv("SUPABASE_URL");
