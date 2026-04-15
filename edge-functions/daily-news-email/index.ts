@@ -485,7 +485,7 @@ function buildDigestHtml(
                         ${descriptionText}
                     </p>
                     <div style="border-top: 1px solid #f3f4f6; padding-top: 16px;">
-                        <a href="${appUrl}" style="color: #2563eb; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;">Read Full Story &rarr;</a>
+                        <a href="${appUrl}" style="color: #2563eb; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;">Read More</a>
                     </div>
                 </div>
             </div>`;
@@ -509,8 +509,8 @@ function buildDigestHtml(
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NextNews Daily Digest</title>
     </head>
-    <body style="margin:0;padding:20px 10px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+    <body style="margin:0;padding:20px 0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <div style="width:100%;max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
             <!-- Header -->
             <div style="text-align:center;padding:48px 24px 24px;background-color:#ffffff;">
                 <p style="margin:0 0 10px;color:#64748b;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Morning Digest For You</p>
@@ -539,29 +539,27 @@ function buildDigestHtml(
                         ${categoriesHtml}
                     </div>
                     
-                    <a href="${appUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);">Explore More Categories</a>
+                    <a href="${appUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);">Explore Categories</a>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div style="background-color: #f1f5f9; padding: 40px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
-                <a href="${appUrl}" style="display: inline-block; margin-bottom: 24px;">
-                    <img src="${logoUrl}" alt="NextNews" style="height: 32px; width: auto;" onerror="this.style.display='none';">
+            <div style="background-color: #ffffff; padding: 48px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <a href="${appUrl}" style="display: inline-block; margin-bottom: 32px;">
+                    <img src="${logoUrl}" alt="NextNews" style="height: 36px; width: auto;" onerror="this.style.display='none';">
                 </a>
                 
-                <p style="margin: 0 auto 24px; color: #475569; font-size: 14px; line-height: 1.6; max-width: 440px;">
+                <p style="margin: 0 auto 32px; color: #111827; font-size: 16px; line-height: 1.6; max-width: 480px; font-family: 'Georgia', serif;">
                     NextNews delivers the world's most critical updates summarized by AI. Stay informed, stay ahead, and make better decisions every day.
                 </p>
                 
-                <div style="margin-bottom: 24px;">
-                    <a href="${privacyUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Privacy Policy</a>
-                    <span style="color: #cbd5e1;">&bull;</span>
-                    <a href="${termsUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Terms & Conditions</a>
-                    <span style="color: #cbd5e1;">&bull;</span>
-                    <a href="${supportUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Support</a>
+                <div style="margin-bottom: 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    <a href="${privacyUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Privacy Policy</a>
+                    <a href="${termsUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Terms & Conditions</a>
+                    <a href="${supportUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Support</a>
                 </div>
                 
-                <div style="border-top: 1px solid #cbd5e1; padding-top: 24px; color: #94a3b8; font-size: 12px; font-weight: 500;">
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 32px; color: #94a3b8; font-size: 12px; font-weight: 500;">
                     <p style="margin: 0 0 8px;">&copy; 2026 NextNews. All rights reserved.</p>
                     <p style="margin: 0;">You're receiving this because you're a registered member of NextNews.</p>
                 </div>
