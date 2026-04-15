@@ -391,7 +391,7 @@ async function suggestCategoriesWithOpenRouter(
         const parsed = extractJsonObject(content);
         const raw = Array.isArray(parsed?.categories) ? parsed?.categories : [];
         const allowed = new Set(categories);
-        
+
         const results: TrendingCategory[] = [];
         const seen = new Set<string>();
 
@@ -439,6 +439,7 @@ function buildDigestHtml(
     categories: TrendingCategory[],
 ) {
     const appUrl = "https://www.nextnews.co.in/";
+    const exploreUrl = `${appUrl}explore`;
     const logoUrl = "https://res.cloudinary.com/dyettbmfd/image/upload/v1776265955/logo2_rpcaid.jpg";
     const privacyUrl = "https://www.nextnews.co.in/privacy-policy";
     const termsUrl = "https://www.nextnews.co.in/terms-and-conditions";
@@ -456,15 +457,17 @@ function buildDigestHtml(
             const titleText = escapeHtml(article.title);
             const descriptionText = escapeHtml(article.description || "Click to read the full story on NextNews.");
             const categoryText = escapeHtml(formatCategoryLabel(article.category));
+            const storyUrl = /^https?:\/\//i.test(article.url) ? article.url : appUrl;
+            const storyHref = escapeHtml(storyUrl);
             const publishedText = article.publishedAt
                 ? `<span style="color: #6b7280; font-size: 11px; display: inline-block;">${escapeHtml(new Date(article.publishedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }))}</span>`
                 : "";
 
             const imageHtml = article.imageUrl
-                ? `<a href="${appUrl}" style="display: block; text-decoration: none;">
+                ? `<a href="${storyHref}" target="_blank" rel="noopener" style="display: block; text-decoration: none;">
                      <img src="${escapeHtml(article.imageUrl)}" alt="${titleText}" style="width: 100%; height: 220px; object-fit: cover; display: block;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';"/>
                    </a>`
-                : `<a href="${appUrl}" style="display: block; text-decoration: none;">
+                : `<a href="${storyHref}" target="_blank" rel="noopener" style="display: block; text-decoration: none;">
                      <div style="width: 100%; height: 120px; background-color: #f3f4f6; display: flex; align-items: center; justify-content: center;">
                        <span style="color: #9ca3af; font-size: 14px; font-weight: 600;">NextNews</span>
                      </div>
@@ -479,28 +482,33 @@ function buildDigestHtml(
                         <div style="flex-grow: 1; text-align: right;">${publishedText}</div>
                     </div>
                     <h2 style="margin: 0 0 10px; font-size: 20px; line-height: 1.3; font-weight: 800;">
-                        <a href="${appUrl}" style="color: #111827; text-decoration: none;">${titleText}</a>
+                        <a href="${storyHref}" target="_blank" rel="noopener" style="color: #111827; text-decoration: none;">${titleText}</a>
                     </h2>
                     <p style="margin: 0 0 16px; color: #4b5563; font-size: 15px; line-height: 1.6;">
                         ${descriptionText}
                     </p>
                     <div style="border-top: 1px solid #f3f4f6; padding-top: 16px;">
-                        <a href="${appUrl}" style="color: #2563eb; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;">Read More</a>
+                        <a href="${storyHref}" target="_blank" rel="noopener" style="color: #2563eb; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center;">Read Full Story</a>
                     </div>
                 </div>
             </div>`;
         })
         .join("\n");
 
-    const categoriesHtml = categories.map((cat) => `
-        <div style="text-align: left; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6; margin-bottom: 12px;">
-            <div style="font-weight: 800; color: #111827; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                <span style="display: inline-block; width: 6px; height: 6px; background-color: #2563eb; border-radius: 50%;"></span>
-                ${escapeHtml(cat.name)}
+    const categoriesHtml = categories.map((cat) => {
+        const searchUrl = `${exploreUrl}?q=${encodeURIComponent(cat.name)}&context=${encodeURIComponent(cat.reason)}`;
+        return `
+        <a href="${escapeHtml(searchUrl)}" style="text-decoration: none; display: block;">
+            <div style="text-align: left; padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6; margin-bottom: 12px;">
+                <div style="font-weight: 800; color: #111827; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; background-color: #2563eb; border-radius: 50%;"></span>
+                    ${escapeHtml(cat.name)}
+                </div>
+                <div style="color: #6b7280; font-size: 13px; line-height: 1.4;">${escapeHtml(cat.reason)}</div>
             </div>
-            <div style="color: #6b7280; font-size: 13px; line-height: 1.4;">${escapeHtml(cat.reason)}</div>
-        </div>
-    `).join("");
+        </a>
+    `;
+    }).join("");
 
     return `<!doctype html>
 <html lang="en">
@@ -531,37 +539,37 @@ function buildDigestHtml(
                 <!-- Trending Categories -->
                 <div style="background-color:#ffffff;border-radius:12px;padding:24px;border:2px solid #f1f5f9;text-align:center;margin-bottom:32px;">
                     <div style="margin-bottom: 20px;">
-                        <h2 style="margin:0 0 6px;font-size:22px;color:#111827;font-weight:800;">🔥 Today's Recommended Categories</h2>
-                        <p style="margin:0;color:#64748b;font-size:14px;font-weight:500;">AI-curated based on live news updates.</p>
+                        <h2 style="margin:0 0 6px;font-size:22px;color:#111827;font-weight:800;">🔥 Today's Recommendations</h2>
+                        <p style="margin:0;color:#64748b;font-size:14px;font-weight:500;">AI-curated based on current global coverage.</p>
                     </div>
                     
                     <div style="margin-bottom:16px;">
                         ${categoriesHtml}
                     </div>
                     
-                    <a href="${appUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);">Explore Categories</a>
+                    <a href="${exploreUrl}" style="display:inline-block;background-color:#2563eb;color:#ffffff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);">Explore Categories</a>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div style="background-color: #ffffff; padding: 48px 24px; text-align: center; border-top: 1px solid #e2e8f0;">
-                <a href="${appUrl}" style="display: inline-block; margin-bottom: 32px;">
-                    <img src="${logoUrl}" alt="NextNews" style="height: 36px; width: auto;" onerror="this.style.display='none';">
+            <div style="background-color: #e0f2fe; padding: 50px 20px; text-align: center; border-top: 2px solid #bae6fd; border-radius: 0 0 16px 16px;">
+                <a href="${appUrl}" style="display: inline-block; margin-bottom: 24px; text-decoration: none;">
+                    <img src="${logoUrl}" alt="NextNews" style="height: 42px; width: auto; max-width: 100%; border-radius: 4px;" onerror="this.style.display='none';">
                 </a>
                 
-                <p style="margin: 0 auto 32px; color: #111827; font-size: 16px; line-height: 1.6; max-width: 480px; font-family: 'Georgia', serif;">
-                    NextNews delivers the world's most critical updates summarized by AI. Stay informed, stay ahead, and make better decisions every day.
+                <p style="margin: 0 auto 28px; color: #334155; font-size: 15px; line-height: 1.6; max-width: 480px; font-weight: 500; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    NextNews delivers the world's most critical news updates with AI-powered recommendations. Stay informed, stay ahead, and make smarter decisions every day.
                 </p>
                 
-                <div style="margin-bottom: 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                    <a href="${privacyUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Privacy Policy</a>
-                    <a href="${termsUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Terms & Conditions</a>
-                    <a href="${supportUrl}" style="color: #2563eb; text-decoration: underline; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin: 8px 12px;">Support</a>
+                <div style="margin-bottom: 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                    <a href="${privacyUrl}" style="color: #0369a1; text-decoration: none; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; display: inline-block; margin: 8px 14px; padding: 6px;">Privacy Policy</a>
+                    <a href="${termsUrl}" style="color: #0369a1; text-decoration: none; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; display: inline-block; margin: 8px 14px; padding: 6px;">Terms & Conditions</a>
+                    <a href="${supportUrl}" style="color: #0369a1; text-decoration: none; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; display: inline-block; margin: 8px 14px; padding: 6px;">Support</a>
                 </div>
                 
-                <div style="border-top: 1px solid #f1f5f9; padding-top: 32px; color: #94a3b8; font-size: 12px; font-weight: 500;">
+                <div style="border-top: 1px solid #bae6fd; margin: 0 auto; padding-top: 28px; color: #475569; font-size: 13px; font-weight: 500; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                     <p style="margin: 0 0 8px;">&copy; 2026 NextNews. All rights reserved.</p>
-                    <p style="margin: 0;">You're receiving this because you're a registered member of NextNews.</p>
+                    <p style="margin: 0;">You're receiving this email because you're a registered member of NextNews.</p>
                 </div>
             </div>
         </div>
@@ -605,17 +613,18 @@ function buildDigestText(
     ];
 
     articles.forEach((article) => {
+        const storyUrl = /^https?:\/\//i.test(article.url) ? article.url : appUrl;
         const categoryLabel = formatCategoryLabel(article.category).toUpperCase();
         lines.push(`[${categoryLabel}] ${article.title.toUpperCase()}`);
-        
+
         if (article.description) {
-            const desc = article.description.length > 200 
-                ? article.description.slice(0, 197) + "..." 
+            const desc = article.description.length > 200
+                ? article.description.slice(0, 197) + "..."
                 : article.description;
             lines.push(desc);
         }
-        
-        lines.push(`Go to story: ${appUrl}`);
+
+        lines.push(`Go to story: ${storyUrl}`);
         lines.push("");
     });
 
@@ -623,7 +632,7 @@ function buildDigestText(
     lines.push("🔥 TRENDING TOPICS TODAY");
     lines.push("-----------------------------------------");
     lines.push("");
-    
+
     categories.forEach(cat => {
         lines.push(`• ${cat.name.toUpperCase()}`);
         lines.push(`  ${cat.reason}`);
@@ -633,7 +642,7 @@ function buildDigestText(
     lines.push(`Explore more in the app: ${appUrl}explore`);
     lines.push("");
     lines.push("-----------------------------------------");
-    lines.push("NextNews - AI-powered news summaries.");
+    lines.push("NextNews - AI-powered news updates.");
     lines.push("Visit us: https://www.nextnews.co.in");
     lines.push("");
     lines.push("Legal Information:");
@@ -791,7 +800,7 @@ Deno.serve(async (request: Request) => {
             );
         }
 
-        const recipients = ["morsedgalib982@gmail.com"];
+        const recipients = allEmails.slice(0, maxRecipients);
         const { categoryScores, allArticles } = await fetchTrendingHeadlines(
             country,
             categoryList,
