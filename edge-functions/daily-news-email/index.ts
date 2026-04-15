@@ -27,10 +27,32 @@ type NewsApiResponse = {
     articles?: NewsApiArticle[];
 };
 
+type NormalizedArticle = {
+    title: string;
+    url: string;
+    description: string;
+    source: string;
+    publishedAt: string;
+    imageUrl: string;
+    category: string;
+    score: number;
+};
+
 const RESEND_BATCH_ENDPOINT = "https://api.resend.com/emails/batch";
+const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_COUNTRY = "us";
 const DEFAULT_MAX_ARTICLES = 5;
 const DEFAULT_MAX_RECIPIENTS = 100;
+const DEFAULT_CATEGORY_PAGE_SIZE = 6;
+const DEFAULT_NEWS_CATEGORIES = [
+    "general",
+    "technology",
+    "business",
+    "entertainment",
+    "health",
+    "science",
+    "sports",
+];
 const RESEND_BATCH_SIZE = 100;
 const LIST_USERS_PER_PAGE = 100;
 const MAX_USER_PAGES = 100;
@@ -55,6 +77,76 @@ function escapeHtml(value: string) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+}
+
+function extractJsonObject(text: string): Record<string, unknown> | null {
+    try {
+        return JSON.parse(text) as Record<string, unknown>;
+    } catch {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) return null;
+        try {
+            return JSON.parse(match[0]) as Record<string, unknown>;
+        } catch {
+            return null;
+        }
+    }
+}
+
+function toTitleCase(value: string) {
+    return value
+        .split(/\s|-/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
+function formatCategoryLabel(category: string) {
+    if (category === "general") return "Top";
+    return toTitleCase(category);
+}
+
+function normalizeCategory(value: string, allowed: Set<string>) {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "top") return "general";
+    if (allowed.has(normalized)) return normalized;
+    for (const entry of allowed) {
+        if (formatCategoryLabel(entry).toLowerCase() === normalized) return entry;
+    }
+    return null;
+}
+
+function parseCategoryList(value: string | undefined) {
+    const allowed = new Set(DEFAULT_NEWS_CATEGORIES);
+    const entries = (value || "")
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+
+    const normalized = entries
+        .map((entry) => normalizeCategory(entry, allowed))
+        .filter((entry): entry is string => Boolean(entry));
+
+    const unique = Array.from(new Set(normalized));
+    return unique.length > 0 ? unique : DEFAULT_NEWS_CATEGORIES.slice();
+}
+
+function rotateByDay(items: string[], date = new Date()) {
+    if (items.length <= 1) return items;
+    const start = new Date(Date.UTC(date.getUTCFullYear(), 0, 0));
+    const dayOfYear = Math.floor((date.getTime() - start.getTime()) / 86400000);
+    const offset = dayOfYear % items.length;
+    return items.slice(offset).concat(items.slice(0, offset));
+}
+
+function buildHeadlineSignals(articles: NormalizedArticle[], limit: number) {
+    return articles
+        .slice(0, limit)
+        .map((article, index) => {
+            const source = article.source || "Unknown";
+            return `${index + 1}. ${article.title} (${source})`;
+        })
+        .join("\n");
 }
 
 function getBearerToken(request: Request): string | null {
@@ -104,7 +196,7 @@ function isProjectAnonJwt(token: string, projectRef: string): boolean {
     }
 }
 
-async function fetchTopHeadlines(country: string, maxArticles: number) {
+function getNewsApiKey() {
     const apiKey =
         Deno.env.get("NEWS_API_KEY")?.trim() ||
         Deno.env.get("NEWS_API_KEY2")?.trim() ||
@@ -116,7 +208,34 @@ async function fetchTopHeadlines(country: string, maxArticles: number) {
         );
     }
 
-    const endpoint = `https://newsapi.org/v2/top-headlines?country=${encodeURIComponent(country)}&page=1&pageSize=${maxArticles}&apiKey=${apiKey}`;
+    return apiKey;
+}
+
+function computeArticleScore(
+    article: { publishedAt: string; description: string; title: string },
+    nowMs: number,
+) {
+    const publishedMs = Date.parse(article.publishedAt);
+    const ageHours = Number.isFinite(publishedMs)
+        ? Math.max(0, (nowMs - publishedMs) / 3600000)
+        : 24;
+    const recencyScore = Math.max(0, 1 - ageHours / 48);
+    const descriptionScore = Math.min(article.description.length / 140, 1);
+    const titleScore = Math.min(article.title.length / 90, 1);
+    return recencyScore * 0.6 + descriptionScore * 0.25 + titleScore * 0.15;
+}
+
+async function fetchCategoryHeadlines(
+    country: string,
+    category: string,
+    pageSize: number,
+    apiKey: string,
+) {
+    const baseUrl = Deno.env.get("NEWS_API_BASE_URL")?.trim() || "https://newsapi.org/v2";
+    const endpoint =
+        `${baseUrl}/top-headlines?country=${encodeURIComponent(country)}` +
+        `&category=${encodeURIComponent(category)}` +
+        `&page=1&pageSize=${pageSize}&apiKey=${apiKey}`;
     const response = await fetch(endpoint, { cache: "no-store" });
     const payload = (await response.json()) as NewsApiResponse;
 
@@ -124,6 +243,7 @@ async function fetchTopHeadlines(country: string, maxArticles: number) {
         throw new Error(payload.message || `Failed to fetch headlines (${response.status}).`);
     }
 
+    const nowMs = Date.now();
     const normalized = Array.isArray(payload.articles)
         ? payload.articles
             .map((article) => {
@@ -132,28 +252,149 @@ async function fetchTopHeadlines(country: string, maxArticles: number) {
 
                 if (!title || !url) return null;
 
+                const description = (article.description ?? "").trim();
+                const publishedAt = (article.publishedAt ?? "").trim();
+                const score = computeArticleScore({
+                    publishedAt,
+                    description,
+                    title,
+                }, nowMs);
+
                 return {
                     title,
                     url,
-                    description: (article.description ?? "").trim(),
+                    description,
                     source: (article.source?.name ?? "Unknown source").trim() || "Unknown source",
-                    publishedAt: (article.publishedAt ?? "").trim(),
+                    publishedAt,
                     imageUrl: (article.urlToImage ?? "").trim(),
+                    category,
+                    score,
                 };
             })
-            .filter(
-                (article): article is {
-                    title: string;
-                    url: string;
-                    description: string;
-                    source: string;
-                    publishedAt: string;
-                    imageUrl: string;
-                } => Boolean(article),
-            )
+            .filter((article): article is NormalizedArticle => Boolean(article))
         : [];
 
     return normalized;
+}
+
+function computeCategoryHotness(articles: NormalizedArticle[]) {
+    if (!articles.length) return 0;
+    const top = [...articles]
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+    const average = top.reduce((sum, item) => sum + item.score, 0) / top.length;
+    const volumeBoost = Math.min(articles.length / 6, 1) * 0.25;
+    return average + volumeBoost;
+}
+
+function rankArticles(
+    categoryScores: Record<string, number>,
+    articles: NormalizedArticle[],
+) {
+    return articles
+        .map((article) => ({
+            ...article,
+            score: article.score + (categoryScores[article.category] || 0) * 0.35,
+        }))
+        .sort((a, b) => b.score - a.score);
+}
+
+async function fetchTrendingHeadlines(
+    country: string,
+    categories: string[],
+    pageSize: number,
+) {
+    const apiKey = getNewsApiKey();
+    const requests = categories.map(async (category) => {
+        try {
+            const articles = await fetchCategoryHeadlines(country, category, pageSize, apiKey);
+            return { category, articles };
+        } catch {
+            return { category, articles: [] };
+        }
+    });
+
+    const results = await Promise.all(requests);
+    const categoryScores: Record<string, number> = {};
+    const allArticles: NormalizedArticle[] = [];
+
+    for (const result of results) {
+        categoryScores[result.category] = computeCategoryHotness(result.articles);
+        allArticles.push(...result.articles);
+    }
+
+    return { categoryScores, allArticles };
+}
+
+async function suggestCategoriesWithOpenRouter(
+    country: string,
+    categories: string[],
+    headlineSignals: string,
+) {
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY")?.trim();
+    if (!apiKey) return null;
+    const model = Deno.env.get("OPENROUTER_MODEL")?.trim() || "nvidia/nemotron-3-nano-30b-a3b:free";
+
+    try {
+        const prompt = [
+            "You are a news recommendation assistant.",
+            `Today is ${new Date().toISOString().slice(0, 10)}.`,
+            `Country: ${country.toUpperCase()}.`,
+            "Pick the most relevant categories for today from ONLY this list:",
+            categories.map(formatCategoryLabel).join(", "),
+            "",
+            "Live headline signals:",
+            headlineSignals || "No headline signals available.",
+            "",
+            "Return ONLY valid JSON with this exact shape:",
+            "{",
+            '  "categories": ["Category", "Category"]',
+            "}",
+            "Return 4 to 5 categories.",
+        ].join("\n");
+
+        const response = await fetch(OPENROUTER_ENDPOINT, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer":
+                    Deno.env.get("OPENROUTER_SITE_URL")?.trim() ||
+                    "https://next-news-delta-brown.vercel.app",
+                "X-Title": Deno.env.get("OPENROUTER_APP_NAME")?.trim() || "NextNews",
+            },
+            body: JSON.stringify({
+                model,
+                messages: [
+                    {
+                        role: "system",
+                        content: "Return JSON only. Categories must be from the allowed list.",
+                    },
+                    { role: "user", content: prompt },
+                ],
+                temperature: 0.2,
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) return null;
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) return null;
+
+        const parsed = extractJsonObject(content);
+        const raw = Array.isArray(parsed?.categories) ? parsed?.categories : [];
+        const allowed = new Set(categories);
+        const normalized = raw
+            .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+            .filter(Boolean)
+            .map((entry) => normalizeCategory(entry, allowed))
+            .filter((entry): entry is string => Boolean(entry));
+
+        const unique = Array.from(new Set(normalized));
+        return unique.length ? unique : null;
+    } catch {
+        return null;
+    }
 }
 
 function buildDigestSubject() {
@@ -174,15 +415,18 @@ function buildDigestHtml(
         source: string;
         publishedAt: string;
         imageUrl: string;
+        category: string;
     }>,
+    categories: string[],
 ) {
     const appUrl = "https://www.nextnews.co.in/";
-    
+
     const headlineItems = articles
         .map((article) => {
             const sourceText = escapeHtml(article.source);
             const titleText = escapeHtml(article.title);
             const descriptionText = escapeHtml(article.description || "Click to read the full story on NextNews.");
+            const categoryText = escapeHtml(formatCategoryLabel(article.category));
             const publishedText = article.publishedAt
                 ? `<span style="color: #6b7280; font-size: 12px; display: inline-block;">${escapeHtml(new Date(article.publishedAt).toLocaleString())}</span>`
                 : "";
@@ -203,6 +447,7 @@ function buildDigestHtml(
                 <div style="padding: 20px;">
                     <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <span style="background-color: #111827; color: #ffffff; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; display: inline-block;">${sourceText}</span>
+                        <span style="background-color: #e5e7eb; color: #111827; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; display: inline-block;">${categoryText}</span>
                         ${publishedText}
                     </div>
                     <h2 style="margin: 0 0 12px; font-size: 18px; line-height: 1.4;">
@@ -219,8 +464,7 @@ function buildDigestHtml(
         })
         .join("\n");
 
-    const categories = ["Technology", "Business", "Entertainment", "Health", "Science", "Sports"];
-    const categoriesHtml = categories.map(cat => 
+    const categoriesHtml = categories.map((cat) =>
         `<a href="${appUrl}" style="display: inline-block; background-color: #f3f4f6; color: #374151; padding: 6px 14px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 600; margin: 4px;">${cat}</a>`
     ).join("");
 
@@ -241,7 +485,8 @@ function buildDigestHtml(
 
             <!-- Trending Categories -->
             <div style="background-color:#ffffff;border-radius:16px;padding:24px;border:1px solid #f3f4f6;text-align:center;margin-bottom:32px;">
-                <h2 style="margin:0 0 16px;font-size:18px;color:#111827;font-weight:700;">&#128293; Trending Categories Today</h2>
+                <h2 style="margin:0 0 8px;font-size:18px;color:#111827;font-weight:700;">&#128293; Today's Recommended Categories</h2>
+                <p style="margin:0 0 16px;color:#6b7280;font-size:14px;">AI-picked from what's hot right now.</p>
                 <div style="margin-bottom:20px;">
                     ${categoriesHtml}
                 </div>
@@ -269,35 +514,62 @@ function buildDigestText(
         source: string;
         publishedAt: string;
         imageUrl: string;
+        category: string;
     }>,
+    categories: string[],
 ) {
     const appUrl = "https://www.nextnews.co.in/";
+    const now = new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    }).format(new Date());
+
     const lines = [
-        "NextNews Morning Brief",
-        "======================",
+        "NEXTNEWS MORNING BRIEF",
+        "Your personalized daily update",
+        "-----------------------------------------",
+        `Date: ${now}`,
+        "-----------------------------------------",
         "",
-        "Top headlines for today:",
+        "TOP STORIES FOR YOU",
+        "===================",
         "",
     ];
 
     articles.forEach((article, index) => {
-        lines.push(`${index + 1}. ${article.title}`);
+        const categoryLabel = formatCategoryLabel(article.category).toUpperCase();
+        lines.push(`[${categoryLabel}] ${article.title}`);
         lines.push(`Source: ${article.source}`);
-        if (article.description) lines.push(article.description);
-        if (article.publishedAt) {
-            lines.push(`Published: ${new Date(article.publishedAt).toLocaleString()}`);
+        
+        if (article.description) {
+            // Simple truncation for text version if it's too long
+            const desc = article.description.length > 160 
+                ? article.description.slice(0, 157) + "..." 
+                : article.description;
+            lines.push(desc);
         }
-        lines.push(`Read more on our app: ${appUrl}`);
-        lines.push("");
-        lines.push("----------------------");
+        
+        lines.push(`Read the full story: ${appUrl}`);
         lines.push("");
     });
 
-    lines.push("🔥 Trending Categories Today:");
-    lines.push("Technology, Business, Entertainment, Health, Science, Sports");
-    lines.push(`Explore more: ${appUrl}`);
+    lines.push("-----------------------------------------");
+    lines.push("🔥 TODAY'S RECOMMENDED CATEGORIES");
+    lines.push("AI-picked based on current trends:");
     lines.push("");
-    lines.push("You are receiving this because you have a registered account on NextNews.");
+    lines.push(categories.map(c => `• ${c}`).join("\n"));
+    lines.push("");
+    lines.push(`Explore more categories in the app: ${appUrl}`);
+    lines.push("-----------------------------------------");
+    lines.push("");
+    lines.push("NextNews - All the news that matters, in one place.");
+    lines.push("Visit us at: https://www.nextnews.co.in");
+    lines.push("");
+    lines.push("You are receiving this daily brief because you have a account on NextNews.");
+    lines.push("To manage your email preferences, please visit the app settings.");
+
     return lines.join("\n");
 }
 
@@ -404,10 +676,18 @@ Deno.serve(async (request: Request) => {
             DEFAULT_MAX_ARTICLES,
             20,
         );
+        const categoryPageSize = parsePositiveInt(
+            Deno.env.get("DAILY_DIGEST_CATEGORY_PAGE_SIZE")?.trim(),
+            DEFAULT_CATEGORY_PAGE_SIZE,
+            20,
+        );
         const maxRecipients = parsePositiveInt(
             Deno.env.get("DAILY_DIGEST_MAX_RECIPIENTS")?.trim(),
             DEFAULT_MAX_RECIPIENTS,
             50000,
+        );
+        const categoryList = parseCategoryList(
+            Deno.env.get("DAILY_DIGEST_NEWS_CATEGORIES")?.trim(),
         );
         const country =
             Deno.env.get("DAILY_DIGEST_NEWS_COUNTRY")?.trim().toLowerCase() ||
@@ -437,8 +717,22 @@ Deno.serve(async (request: Request) => {
             );
         }
 
-        const recipients = allEmails.slice(0, maxRecipients);
-        const headlines = await fetchTopHeadlines(country, maxArticles);
+        const recipients = ["morsedgalib982@gmail.com"];
+        const { categoryScores, allArticles } = await fetchTrendingHeadlines(
+            country,
+            categoryList,
+            categoryPageSize,
+        );
+
+        const rankedArticles = rankArticles(categoryScores, allArticles);
+        const deduped = new Map<string, NormalizedArticle>();
+        for (const article of rankedArticles) {
+            const existing = deduped.get(article.url);
+            if (!existing || article.score > existing.score) {
+                deduped.set(article.url, article);
+            }
+        }
+        const headlines = Array.from(deduped.values()).slice(0, maxArticles);
 
         if (!headlines.length) {
             return new Response(
@@ -447,9 +741,24 @@ Deno.serve(async (request: Request) => {
             );
         }
 
+        const headlineSignals = buildHeadlineSignals(rankedArticles, 25);
+        const suggestedCategories = await suggestCategoriesWithOpenRouter(
+            country,
+            categoryList,
+            headlineSignals,
+        );
+        const fallbackCategories = rotateByDay(
+            categoryList
+                .slice()
+                .sort((a, b) => (categoryScores[b] || 0) - (categoryScores[a] || 0)),
+        );
+        const trendingCategories = (suggestedCategories || fallbackCategories)
+            .slice(0, 7)
+            .map(formatCategoryLabel);
+
         const subject = buildDigestSubject();
-        const html = buildDigestHtml(headlines);
-        const text = buildDigestText(headlines);
+        const html = buildDigestHtml(headlines, trendingCategories);
+        const text = buildDigestText(headlines, trendingCategories);
 
         for (let index = 0; index < recipients.length; index += RESEND_BATCH_SIZE) {
             const chunk = recipients.slice(index, index + RESEND_BATCH_SIZE);
