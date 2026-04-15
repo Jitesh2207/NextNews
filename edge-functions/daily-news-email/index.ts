@@ -345,8 +345,9 @@ async function suggestCategoriesWithOpenRouter(
             "You are a news recommendation assistant.",
             `Today is ${new Date().toISOString().slice(0, 10)}.`,
             `Country: ${country.toUpperCase()}.`,
-            "Pick the most relevant 4 to 5 categories for today from ONLY this list and provide a short, catchy reason (max 6 words) for each based on current trends:",
-            categories.map(formatCategoryLabel).join(", "),
+            "Based on the headlines provided, identify 4 to 5 highly specific real-world trending topics or situations (NOT generic categories).",
+            "Example names: 'Global Chip Shortage', 'Fed Interest Rate Shift', 'Nvidia Stock Surge'.",
+            "For each topic, provide a very short, catchy reason (max 6 words) explaining why it's trending.",
             "",
             "Live headline signals:",
             headlineSignals || "No headline signals available.",
@@ -354,7 +355,7 @@ async function suggestCategoriesWithOpenRouter(
             "Return ONLY valid JSON with this exact shape:",
             "{",
             '  "categories": [',
-            '    { "name": "Category Name", "reason": "Short catchy reason why it is trending" }',
+            '    { "name": "Topic Name", "reason": "Short catchy reason" }',
             '  ]',
             "}",
         ].join("\n");
@@ -400,13 +401,12 @@ async function suggestCategoriesWithOpenRouter(
             const reason = entry.reason?.trim();
             if (!name || !reason) continue;
 
-            const normalizedName = normalizeCategory(name, allowed);
-            if (normalizedName && !seen.has(normalizedName)) {
+            if (!seen.has(name.toLowerCase())) {
                 results.push({
-                    name: formatCategoryLabel(normalizedName),
+                    name: name,
                     reason: reason,
                 });
-                seen.add(normalizedName);
+                seen.add(name.toLowerCase());
             }
         }
 
@@ -439,10 +439,16 @@ function buildDigestHtml(
     categories: TrendingCategory[],
 ) {
     const appUrl = "https://www.nextnews.co.in/";
-    const logoUrl = "https://github.com/GalibMorsed/NextNews/blob/3f94a442bdea7fc1ade2c070d0ef61bd36f7508a/public/logo2.jpg";
+    const logoUrl = "https://res.cloudinary.com/dyettbmfd/image/upload/v1776265955/logo2_rpcaid.jpg";
     const privacyUrl = "https://www.nextnews.co.in/privacy-policy";
     const termsUrl = "https://www.nextnews.co.in/terms-and-conditions";
     const supportUrl = "https://www.nextnews.co.in/support";
+
+    const dateLabel = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    }).format(new Date());
 
     const headlineItems = articles
         .map((article) => {
@@ -469,7 +475,6 @@ function buildDigestHtml(
                 ${imageHtml}
                 <div style="padding: 20px;">
                     <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span style="background-color: #000000; color: #ffffff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">${sourceText}</span>
                         <span style="background-color: #f3f4f6; color: #4b5563; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">${categoryText}</span>
                         <div style="flex-grow: 1; text-align: right;">${publishedText}</div>
                     </div>
@@ -507,9 +512,14 @@ function buildDigestHtml(
     <body style="margin:0;padding:20px 10px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
             <!-- Header -->
-            <div style="text-align:center;padding:32px 20px;background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);color: #ffffff;">
-                <h1 style="margin:0 0 8px;font-size:32px;font-weight:900;letter-spacing:-1px;">NextNews</h1>
-                <p style="margin:0;color:#94a3b8;font-size:16px;font-weight:500;">Your AI-Powered Morning Briefing</p>
+            <div style="text-align:center;padding:48px 24px 24px;background-color:#ffffff;">
+                <p style="margin:0 0 10px;color:#64748b;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Morning Digest For You</p>
+                <h1 style="margin:0 0 10px;color:#111827;font-size:38px;font-weight:800;font-family:'Georgia',serif;letter-spacing:-1px;">NextNews Daily</h1>
+                <p style="margin:0 0 32px;color:#64748b;font-size:14px;font-weight:500;">${dateLabel}</p>
+                
+                <hr style="border:0;border-top:1px solid #e2e8f0;margin:0 0 32px 0;">
+                
+                <h3 style="margin:0 0 16px;color:#64748b;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">Today's Highlights</h3>
             </div>
 
             <div style="padding: 24px;">
@@ -543,10 +553,12 @@ function buildDigestHtml(
                     NextNews delivers the world's most critical updates summarized by AI. Stay informed, stay ahead, and make better decisions every day.
                 </p>
                 
-                <div style="margin-bottom: 24px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                    <a href="${privacyUrl}" style="color: #64748b; text-decoration: none; font-size: 13px; font-weight: 600;">Privacy Policy</a>
-                    <a href="${termsUrl}" style="color: #64748b; text-decoration: none; font-size: 13px; font-weight: 600;">Terms & Conditions</a>
-                    <a href="${supportUrl}" style="color: #64748b; text-decoration: none; font-size: 13px; font-weight: 600;">Support</a>
+                <div style="margin-bottom: 24px;">
+                    <a href="${privacyUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Privacy Policy</a>
+                    <span style="color: #cbd5e1;">&bull;</span>
+                    <a href="${termsUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Terms & Conditions</a>
+                    <span style="color: #cbd5e1;">&bull;</span>
+                    <a href="${supportUrl}" style="color: #64748b; text-decoration: underline; font-size: 13px; font-weight: 600; margin: 0 12px;">Support</a>
                 </div>
                 
                 <div style="border-top: 1px solid #cbd5e1; padding-top: 24px; color: #94a3b8; font-size: 12px; font-weight: 500;">
@@ -597,7 +609,6 @@ function buildDigestText(
     articles.forEach((article) => {
         const categoryLabel = formatCategoryLabel(article.category).toUpperCase();
         lines.push(`[${categoryLabel}] ${article.title.toUpperCase()}`);
-        lines.push(`Source: ${article.source}`);
         
         if (article.description) {
             const desc = article.description.length > 200 
@@ -611,7 +622,7 @@ function buildDigestText(
     });
 
     lines.push("-----------------------------------------");
-    lines.push("🔥 TRENDING CATEGORIES TODAY");
+    lines.push("🔥 TRENDING TOPICS TODAY");
     lines.push("-----------------------------------------");
     lines.push("");
     
