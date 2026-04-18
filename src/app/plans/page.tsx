@@ -473,7 +473,7 @@ export default function PlansPage() {
                   Email
                 </a>
                 <a
-                  href="https://www.instagram.com/galib_morsed/"
+                  href="https://www.instagram.com/nextnews.co.in?igsh=MTkxNXh6M2IzaXFxeQ=="
                   className="text-sm text-slate-300 hover:text-teal-400"
                 >
                   Social Media
