@@ -19,4 +19,4 @@ Unauthorized copying, distribution, modification, or commercial use
 of this software, in whole or in part, without explicit written
 permission from the author is strictly prohibited.
 
-For licensing inquiries, contact the author.
+For licensing inquiries, contact the author at : **galib.morsed@nextnews.co.in**
