@@ -54,6 +54,7 @@ const sections = [
     text: [
       "NextNews currently previews multiple plan tiers and is preparing for domain launch and payment integration. Once paid plans are activated, plan access, subscription periods, payment obligations, renewal handling, cancellation rules, and any related News API or AI API credits will be governed by the active billing terms then published by the platform.",
       "Any future API-credit allocations for News or AI usage will be treated as account-specific service entitlements. Unless explicitly stated otherwise, such credits will not be transferable, redeemable for cash, or guaranteed beyond the applicable billing period or promotional terms.",
+      "A refund policy will be published before billing goes live and will be referenced in the checkout flow or account billing settings.",
     ],
   },
   {
@@ -65,11 +66,36 @@ const sections = [
     ],
   },
   {
+    title: "Disclaimer of Warranties",
+    icon: ShieldCheck,
+    text: [
+      'NextNews is provided on an "as is" and "as available" basis. To the maximum extent permitted by applicable law, NextNews disclaims all warranties of any kind, whether express, implied, statutory, or otherwise, including warranties of merchantability, fitness for a particular purpose, non-infringement, and uninterrupted availability.',
+    ],
+  },
+  {
+    title: "Limitation of Liability",
+    icon: AlertTriangle,
+    text: [
+      "To the maximum extent permitted by applicable law, NextNews and its operators will not be liable for any indirect, incidental, consequential, special, punitive, or exemplary damages, or for any loss of profits, revenues, data, goodwill, or business opportunities arising from or related to your use of the service.",
+      "If liability is imposed despite this limitation, NextNews' total liability for any claim will not exceed the amount you paid to NextNews for the service in the twelve (12) months before the event giving rise to the claim, or INR 0 if no fees were paid.",
+    ],
+  },
+  {
     title: "Suspension, Termination, and Changes",
     icon: AlertTriangle,
     text: [
       "NextNews may suspend, restrict, or terminate access where reasonably necessary to protect the platform, investigate abuse, enforce applicable rules, respond to technical or legal risk, or manage service availability.",
+      "Where feasible, we will provide notice of suspension or termination and a route to appeal through the support channel. In cases involving fraud, security risks, or legal requirements, access may be restricted immediately.",
+      "After termination, account data and saved content may be deleted or retained as described in the Privacy Policy and as required by applicable law.",
       "These terms may be updated as the product evolves. Continued use of the platform after updated terms or policies are presented may be treated as acceptance of the revised documents where permitted by applicable rules.",
+    ],
+  },
+  {
+    title: "Governing Law and Dispute Resolution",
+    icon: LockKeyhole,
+    text: [
+      "These Terms are governed by the laws of India. The parties will attempt to resolve disputes in good faith through informal discussions first.",
+      "If a dispute cannot be resolved informally, you agree to the exclusive jurisdiction of the courts of Bangalore, Karnataka, India, subject to applicable law.",
     ],
   },
 ];
@@ -91,6 +117,9 @@ export default function TermsAndConditionsPage() {
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl">
             Terms governing the use of NextNews
           </h1>
+          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-blue-700/80 dark:text-blue-300/80">
+            Last updated: April, 2026
+          </p>
           <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
             These Terms & Conditions set out the rules that apply to account
             creation, use of authenticated features, AI tools, plans, support
@@ -144,9 +173,13 @@ export default function TermsAndConditionsPage() {
                 Need help with our Terms or Account rules?
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
-                If you have any questions regarding these Terms &amp; Conditions,
-                account responsibilities, AI usage limits, or upcoming billing
-                and credit policies, please reach out to our support team.
+                If you have any questions regarding these Terms &amp;
+                Conditions, account responsibilities, AI usage limits, or
+                upcoming billing and credit policies, please reach out to our
+                support team.
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">
+                Email: nextnews.co.in@gmail.com
               </p>
             </div>
 

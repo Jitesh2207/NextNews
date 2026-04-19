@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Baby,
   Bot,
   CreditCard,
   Database,
@@ -77,6 +78,18 @@ const policySections: PolicySection[] = [
       "Protected areas currently include personalization, notes, explore, and certain AI-powered or account-linked features.",
       "If a session becomes invalid, the app may clear local session state and require the user to log in again.",
       "Account deletion is supported through an authenticated confirmation flow and is intended to remove the account plus related saved note records from server-side storage.",
+    ],
+  },
+  {
+    title: "Cookies, Tokens, and Local Storage",
+    icon: ShieldCheck,
+    paragraphs: [
+      "NextNews uses browser cookies and local storage to keep sessions active, remember preferences, and support essential app functionality. These are primarily functional and security-related rather than advertising-oriented.",
+    ],
+    bullets: [
+      "Auth session cookie (first-party, set by Supabase): keeps you signed in and expires when the session token expires or is invalidated (duration depends on provider configuration).",
+      "Third-party sign-in cookies (Google OAuth, if you choose Google login): set on Google domains and governed by Google's own policies and retention windows.",
+      "Local storage items (first-party): store appearance preferences, UI settings, and limited in-browser activity analytics tied to your account.",
     ],
   },
   {
@@ -179,6 +192,7 @@ const policySections: PolicySection[] = [
     bullets: [
       "Support tools may include contact forms, live chat links, phone support references, and support feedback interactions.",
       "Support and feedback information should not include unnecessary sensitive personal data unless specifically required to resolve an issue.",
+      "Privacy contact email: nextnews.co.in@gmail.com.",
     ],
   },
   {
@@ -192,6 +206,18 @@ const policySections: PolicySection[] = [
       "Current service integrations may include Supabase for authentication and database functions, NewsAPI for news retrieval, OpenRouter for AI requests, and YouTube services for live-news discovery.",
       "Future integrations may include payment processors, invoicing tools, anti-fraud tools, customer-support systems, and subscription-management platforms.",
       "Any future partner-facing data-sharing features should be governed by explicit product disclosures and operational controls before they are treated as active sharing behavior.",
+    ],
+  },
+  {
+    title: "International Data Transfers",
+    icon: Database,
+    paragraphs: [
+      "NextNews uses third-party infrastructure and APIs that may process data on servers located outside India, including the United States. This means personal data associated with your account, sessions, AI requests, or news queries may be transferred across borders depending on the provider involved.",
+      "By using the service, you acknowledge these cross-border transfers. We rely on provider security controls and applicable contractual safeguards to protect data in transit and at rest.",
+    ],
+    bullets: [
+      "Supabase, OpenRouter, and NewsAPI are currently operated by providers with infrastructure based in or routed through the United States.",
+      "Where cross-border processing applies, NextNews aims to align with applicable Indian data-protection requirements, including DPDP Act 2023 obligations as they evolve.",
     ],
   },
   {
@@ -224,13 +250,25 @@ const policySections: PolicySection[] = [
     ],
   },
   {
-    title: "Children, Production Growth, and Policy Changes",
-    icon: Sparkles,
+    title: "Governing Law and Compliance",
+    icon: ShieldCheck,
     paragraphs: [
-      "NextNews is designed as a general news application and is not intended to knowingly collect personal information from very young children. Current account validation and settings flows are built around a user base old enough to manage an account responsibly, and some age-related validation is already present in account settings.",
+      "This Privacy Policy is governed by the laws of India. NextNews aims to comply with the Information Technology Act, 2000 and the Digital Personal Data Protection Act, 2023 (DPDP Act), along with any applicable rules or guidance issued under those laws.",
+      "If local regulations require additional disclosures, controls, or user rights, this policy may be updated accordingly and reflected with a revised effective date.",
+    ],
+    bullets: [
+      "If you have questions about compliance or rights under Indian law, contact nextnews.co.in@gmail.com",
+    ],
+  },
+  {
+    title: "Children, Production Growth, and Policy Changes",
+    icon: Baby,
+    paragraphs: [
+      "NextNews is designed as a general news application and is not intended for children under 13 years of age. We do not knowingly collect personal data from children under 13, and account validation flows are built for users old enough to manage an account responsibly.",
       "As the application moves toward domain launch, payment integration, and fuller production readiness, this policy may be updated to reflect newly active systems, billing providers, API credit mechanics, legal disclosures, and region-specific compliance requirements. Material updates should be reflected on this page with a revised effective date.",
     ],
     bullets: [
+      "If you believe a child under 13 has provided personal data, contact nextnews.co.in@gmail.com so we can delete it.",
       "Users should review this page periodically for changes.",
       "Plan and credit language in this policy is especially likely to evolve as monetization becomes operational.",
     ],
@@ -258,14 +296,22 @@ export default function PrivacyPolicyPage() {
                 NextNews Privacy Policy and Data Use Overview
               </h1>
 
+              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700/80 dark:text-emerald-300/80">
+                Last updated: April, 2026
+              </p>
+
               <p className="mt-5 max-w-4xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
                 NextNews is a news-reading and discovery platform that combines
                 headline browsing, category navigation, live-news discovery,
-                personalization, AI-powered assistance, notes, settings,
-                support tools, and upcoming subscription capabilities. This
-                policy explains how those product areas interact with user
-                information and how NextNews approaches privacy as the app moves
-                toward full production use.
+                personalization, AI-powered assistance, notes, settings, support
+                tools, and upcoming subscription capabilities. This policy
+                explains how those product areas interact with user information
+                and how NextNews approaches privacy as the app moves toward full
+                production use.
+              </p>
+
+              <p className="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
+                Privacy contact: nextnews.co.in@gmail.com
               </p>
 
               <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
@@ -432,13 +478,18 @@ export default function PrivacyPolicyPage() {
                   <HeadphonesIcon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white">Visit Support</p>
-                  <p className="mt-0.5 text-xs leading-5 text-slate-300">Get help with account, privacy, or billing queries</p>
+                  <p className="text-sm font-semibold text-white">
+                    Visit Support
+                  </p>
+                  <p className="mt-0.5 text-xs leading-5 text-slate-300">
+                    Get help with account, privacy, or billing queries
+                  </p>
                 </div>
                 <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-300" />
               </Link>
               <p className="px-1 text-xs leading-5 text-slate-400">
-                Our support team can assist with policy questions, account data requests, and upcoming subscription or billing inquiries.
+                Our support team can assist with policy questions, account data
+                requests, and upcoming subscription or billing inquiries.
               </p>
             </div>
           </div>
