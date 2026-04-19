@@ -48,3 +48,4 @@ If these are not set, the workflows fall back to safe placeholder values for CI 
 
 - The production Docker image is built from the standalone Next.js output for a smaller and safer runtime container.
 - If you later want validation, automated server deployment, preview environments, or security scans, those can be added back as separate workflows.
+
