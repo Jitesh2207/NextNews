@@ -435,9 +435,17 @@ export default function PersonalizationPage() {
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0, opacity: 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
                         >
-                          <Check size={14} strokeWidth={3.5} className="text-white" />
+                          <Check
+                            size={14}
+                            strokeWidth={3.5}
+                            className="text-white"
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -462,7 +470,7 @@ export default function PersonalizationPage() {
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
             <h2 className="whitespace-nowrap text-lg font-semibold text-slate-900 dark:text-slate-50">
-              Topics
+              Category Topics
             </h2>
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           </div>
@@ -492,11 +500,21 @@ export default function PersonalizationPage() {
           <div className="relative mt-6">
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder="Search any topics..."
               value={topicSearch}
               onChange={(e) => setTopicSearch(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900 px-5 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-[var(--primary)] focus:outline-none"
+              className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900 px-5 py-3 pr-12 text-sm text-slate-900 dark:text-slate-100 focus:border-[var(--primary)] focus:outline-none"
             />
+            {topicSearch.trim().length > 0 && (
+              <button
+                type="button"
+                onClick={() => setTopicSearch("")}
+                aria-label="Clear topic search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
@@ -541,9 +559,17 @@ export default function PersonalizationPage() {
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0, opacity: 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
                         >
-                          <Check size={14} strokeWidth={3.5} className="text-white" />
+                          <Check
+                            size={14}
+                            strokeWidth={3.5}
+                            className="text-white"
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -625,7 +651,7 @@ export default function PersonalizationPage() {
                   <div className="mb-3 flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                     <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
-                      Sources
+                      News Sources
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2.5">
@@ -638,7 +664,7 @@ export default function PersonalizationPage() {
                         <button
                           type="button"
                           onClick={() => removeFavoriteSource(source)}
-                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-200/50 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white dark:bg-blue-900/50 dark:text-blue-400 dark:hover:bg-blue-500 dark:hover:text-white"
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100/70 text-red-600 transition-colors hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-600"
                           aria-label={`Remove ${source}`}
                         >
                           <X size={12} strokeWidth={2.5} />
@@ -654,7 +680,7 @@ export default function PersonalizationPage() {
                   <div className="mb-3 flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
-                      Topics
+                      Category Topics
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2.5">
@@ -667,7 +693,7 @@ export default function PersonalizationPage() {
                         <button
                           type="button"
                           onClick={() => removeFavoriteTopic(topic)}
-                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-200/50 text-emerald-600 transition-colors hover:bg-emerald-600 hover:text-white dark:bg-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-500 dark:hover:text-white"
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100/70 text-red-600 transition-colors hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-600"
                           aria-label={`Remove ${topic}`}
                         >
                           <X size={12} strokeWidth={2.5} />

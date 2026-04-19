@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -10,7 +17,6 @@ import {
   Globe2,
   Loader2,
   Lock,
-  Newspaper,
   Search,
   Sparkles,
   TrendingUp,
@@ -19,7 +25,6 @@ import {
 } from "lucide-react";
 import {
   CATEGORY_ICON_STYLES,
-  SOURCE_ACCENT_STYLES,
   type ExploreArticle,
   type ExploreResponse,
   type ExploreRegionId,
@@ -29,7 +34,11 @@ import {
   getUserPersonalization,
   saveUserPersonalization,
 } from "../services/personalizationService";
-import RegionSelector, { type AIRegionSuggestion } from "../components/RegionSelector";
+import RegionSelector, {
+  type AIRegionSuggestion,
+} from "./components/RegionSelector";
+import ExploreLiveStoriesAndVoices from "./components/ExploreLiveStoriesAndVoices";
+import StoryPromoPopup from "./components/StoryPromoPopup";
 
 type ExploreState = {
   data: ExploreResponse | null;
@@ -153,6 +162,17 @@ export default function ExplorePage() {
   const [favoriteTopics, setFavoriteTopics] = useState<string[]>([]);
   const [isSavingSources, setIsSavingSources] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [promoStoryIndex, setPromoStoryIndex] = useState<number | null>(null);
+  const [showStoryPromo, setShowStoryPromo] = useState(false);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const promoRef = useRef<HTMLDivElement | null>(null);
+  const [promoStyle, setPromoStyle] = useState<
+    { left: number; top: number } | undefined
+  >();
+  const [promoPlacement, setPromoPlacement] = useState<"above" | "below">(
+    "above",
+  );
+  const [promoArrowLeft, setPromoArrowLeft] = useState(0);
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -263,6 +283,91 @@ export default function ExplorePage() {
   const visibleTrendingTopics = data?.trendingTopics ?? [];
   const visibleSources = data?.sourceSuggestions ?? [];
 
+  useEffect(() => {
+    if (visibleTrendingTopics.length > 0) {
+      const lastDismissed = localStorage.getItem("explore_promo_v3");
+      const shouldShow =
+        !lastDismissed ||
+        Date.now() - parseInt(lastDismissed, 10) > 2 * 24 * 60 * 60 * 1000;
+
+      setShowStoryPromo(shouldShow);
+
+      if (shouldShow) {
+        setPromoStoryIndex(
+          Math.floor(Math.random() * visibleTrendingTopics.length),
+        );
+      }
+    }
+  }, [visibleTrendingTopics.length]);
+
+  const dismissStoryPromo = () => {
+    localStorage.setItem("explore_promo_v3", Date.now().toString());
+    setShowStoryPromo(false);
+  };
+
+  useLayoutEffect(() => {
+    if (!showStoryPromo) return undefined;
+
+    const updatePromoPosition = () => {
+      const anchor = anchorRef.current;
+      const promo = promoRef.current;
+      if (!anchor || !promo) return;
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const promoRect = promo.getBoundingClientRect();
+      const viewportPadding = 12;
+      const spacing = 12;
+
+      const prefersAbove = window.innerWidth >= 768;
+      let placement: "above" | "below" = prefersAbove ? "above" : "below";
+
+      let top =
+        placement === "above"
+          ? anchorRect.top - promoRect.height - spacing
+          : anchorRect.bottom + spacing;
+
+      if (placement === "above" && top < viewportPadding) {
+        placement = "below";
+        top = anchorRect.bottom + spacing;
+      }
+
+      if (
+        placement === "below" &&
+        top + promoRect.height > window.innerHeight - viewportPadding
+      ) {
+        placement = "above";
+        top = anchorRect.top - promoRect.height - spacing;
+      }
+
+      const centeredLeft =
+        anchorRect.left + anchorRect.width / 2 - promoRect.width / 2;
+      const minLeft = viewportPadding;
+      const maxLeft = window.innerWidth - promoRect.width - viewportPadding;
+      const left = Math.min(Math.max(centeredLeft, minLeft), maxLeft);
+      const anchorCenter = anchorRect.left + anchorRect.width / 2;
+      const minArrowLeft = 28;
+      const maxArrowLeft = promoRect.width - 28;
+      const arrowLeft = Math.min(
+        Math.max(anchorCenter - left, minArrowLeft),
+        maxArrowLeft,
+      );
+
+      setPromoPlacement(placement);
+      setPromoStyle({ left, top });
+      setPromoArrowLeft(arrowLeft);
+    };
+
+    const raf = window.requestAnimationFrame(updatePromoPosition);
+    window.addEventListener("resize", updatePromoPosition);
+    window.addEventListener("scroll", updatePromoPosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", updatePromoPosition);
+      window.removeEventListener("scroll", updatePromoPosition, true);
+    };
+  }, [showStoryPromo, promoStoryIndex]);
+
   const followSet = useMemo(() => new Set(followedSources), [followedSources]);
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -298,6 +403,9 @@ export default function ExplorePage() {
   };
 
   const handleTopicClick = (tag: string) => {
+    if (showStoryPromo) {
+      dismissStoryPromo();
+    }
     window.dispatchEvent(
       new CustomEvent("sidebar-search", { detail: { query: tag } }),
     );
@@ -382,9 +490,9 @@ export default function ExplorePage() {
                           Explore
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm font-medium text-slate-600 dark:text-slate-400 sm:text-base">
-                          Switch regions or search a live topic. Stories, category
-                          paths, trends, and suggested sources all update around
-                          what is happening now. 🧭🗺️
+                          Switch regions or search a live topic. Stories,
+                          category paths, trends, and suggested sources all
+                          update around what is happening now. 🧭🗺️
                         </p>
                       </div>
                     </div>
@@ -672,153 +780,34 @@ export default function ExplorePage() {
                   </div>
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[0.9fr_1.4fr]">
-                  <PageSurface className="overflow-hidden p-6 sm:p-7">
-                    <div className="flex flex-col gap-5">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-sm shadow-rose-100/50 dark:bg-rose-950/50 dark:text-rose-200">
-                            <TrendingUp className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
-                              AI Live Stories
-                            </h2>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-rose-700 dark:border-rose-950/40 dark:bg-rose-950/40 dark:text-rose-200">
-                          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" />
-                          Trending in {data?.regionLabel}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 space-y-3">
-                      {visibleTrendingTopics.map((topic, index) => (
-                        <motion.button
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.4, delay: index * 0.1 }}
-                          key={`${topic.tag}-${index}`}
-                          onClick={() => handleTopicClick(topic.tag)}
-                          className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-rose-50/60 px-4 py-4 text-left transition-all hover:border-[var(--primary)]/30 hover:bg-white hover:shadow-md dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 dark:hover:bg-slate-800"
-                        >
-                          <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
-                            <div className="min-w-0 flex-1">
-                              <p className="break-words text-lg font-semibold text-[var(--foreground)] transition-colors">
-                                {topic.tag}
-                              </p>
-                              <p className="mt-2 break-words text-sm leading-6 text-[var(--muted)]">
-                                {topic.reason}
-                              </p>
-                            </div>
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-transform dark:bg-emerald-950/50 dark:text-emerald-200">
-                              <ArrowUpRight className="h-4 w-4" />
-                            </div>
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
-                  </PageSurface>
-
-                  <PageSurface className="overflow-hidden p-6 sm:p-7">
-                    <div className="flex flex-col gap-4">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 via-rose-100 to-sky-100 text-amber-700 shadow-sm dark:from-amber-950/50 dark:via-rose-950/40 dark:to-sky-950/40 dark:text-amber-200">
-                            <Newspaper className="h-5 w-5" />
-                          </div>
-                          <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
-                            Suggested Voices
-                          </h2>
-                        </div>
-                      </div>
-                      <div className="inline-flex max-w-fit rounded-full border border-amber-200/60 bg-amber-50/80 px-4 py-1.5 text-xs font-bold text-amber-700 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
-                        Follow Best sources from {data?.regionLabel}.
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex flex-col gap-3">
-                      {visibleSources.map((source, index) => {
-                        const isFollowing = followSet.has(source.name);
-                        const isSaving = isSavingSources === source.name;
-                        const accentStyle =
-                          SOURCE_ACCENT_STYLES[
-                            index % SOURCE_ACCENT_STYLES.length
-                          ];
-                        const SourceIcon = accentStyle.icon;
-
-                        return (
-                          <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.4, delay: index * 0.1 }}
-                            key={`${source.name}-${source.regionHint}-${index}`}
-                            className={`group flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r p-4 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md sm:flex-row sm:items-center sm:justify-between dark:border-slate-700 dark:hover:border-slate-600 ${accentStyle.panel}`}
-                          >
-                            <div className="flex min-w-0 flex-1 items-start gap-4">
-                              <div
-                                className={`mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-bold shadow-sm ${accentStyle.badge}`}
-                              >
-                                <SourceIcon className="h-5 w-5" />
-                              </div>
-
-                              <div className="flex min-w-0 flex-1 flex-col gap-1.5 xl:flex-row xl:items-center xl:gap-5">
-                                <div className="min-w-0 xl:min-w-[140px]">
-                                  <p className="truncate text-base font-bold text-[var(--foreground)]">
-                                    {source.name}
-                                  </p>
-                                  <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--muted)]">
-                                    {source.regionHint}
-                                  </p>
-                                </div>
-
-                                <div className="hidden xl:block h-8 w-px bg-slate-200 dark:bg-slate-800" />
-
-                                <p className="min-w-0 flex-1 break-words text-sm leading-relaxed text-[var(--muted)] line-clamp-2 xl:line-clamp-1">
-                                  {source.reason}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex justify-end pt-1 sm:justify-end sm:pt-0">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void handleToggleSource(source.name)
-                                }
-                                disabled={isSaving}
-                                className={`inline-flex min-w-[120px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-bold transition-all active:scale-95 ${
-                                  isFollowing
-                                    ? "border-indigo-500/30 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
-                                    : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700"
-                                }`}
-                              >
-                                {isSaving ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : isFollowing ? (
-                                  "Following"
-                                ) : (
-                                  "Follow"
-                                )}
-                              </button>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </PageSurface>
-                </section>
+                <ExploreLiveStoriesAndVoices
+                  PageSurface={PageSurface}
+                  regionLabel={data?.regionLabel}
+                  trendingTopics={visibleTrendingTopics}
+                  sources={visibleSources}
+                  promoStoryIndex={promoStoryIndex}
+                  anchorRef={anchorRef}
+                  onTopicClick={handleTopicClick}
+                  onToggleSource={(sourceName) =>
+                    void handleToggleSource(sourceName)
+                  }
+                  isSavingSource={isSavingSources}
+                  followSet={followSet}
+                />
               </>
             )}
           </>
         )}
       </div>
+
+      <StoryPromoPopup
+        isOpen={showStoryPromo && promoStoryIndex !== null}
+        popupRef={promoRef}
+        style={promoStyle}
+        placement={promoPlacement}
+        arrowLeft={promoArrowLeft}
+        onDismiss={dismissStoryPromo}
+      />
     </main>
   );
 }
