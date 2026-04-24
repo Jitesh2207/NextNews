@@ -165,12 +165,18 @@ export default function MyActivityGoalTracker({
           <div className="flex items-center gap-2">
             <input
               type="number"
-              min="1"
-              max="99"
+              max="100"
               value={!targetOptions.includes(weeklyGoal) ? weeklyGoal : ""}
               placeholder="Custom"
               onChange={(e) =>
-                onSetWeeklyGoal(parseInt(e.target.value, 10) || 1)
+                {
+                  const val = parseInt(e.target.value, 10) || 1;
+                  if (val > 100) {
+                    window.alert("Maximum goal cannot exceed 100");
+                    return;
+                  }
+                  onSetWeeklyGoal(val);
+                }
               }
               className={`h-10 w-24 rounded-2xl border px-3 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 dark:bg-slate-800/60 dark:text-slate-300 ${
                 !targetOptions.includes(weeklyGoal)
