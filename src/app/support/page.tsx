@@ -24,8 +24,8 @@ export default function SupportPage() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
   const [feedbackToastKey, setFeedbackToastKey] = useState(0);
-  const [communityLikes, setCommunityLikes] = useState(24892);
-  const [feedbackCount, setFeedbackCount] = useState(31240);
+  const [communityLikes, setCommunityLikes] = useState(2892);
+  const [feedbackCount, setFeedbackCount] = useState(3240);
   const [formData, setFormData] = useState({
     issueType: "",
     name: "",
@@ -69,22 +69,30 @@ export default function SupportPage() {
     {
       title: "FAQ",
       desc: "Browse common questions and quick solutions.",
-      icon: <FaQuestionCircle className="text-2xl text-teal-400" />,
+      icon: (
+        <FaQuestionCircle className="text-[22px] text-black drop-shadow-sm transition-colors duration-300 dark:text-white" />
+      ),
     },
     {
       title: "Live Chat",
       desc: "Chat with our support team in real time.",
-      icon: <FaComments className="text-2xl text-teal-400" />,
+      icon: (
+        <FaComments className="text-[22px] text-black drop-shadow-sm transition-colors duration-300 dark:text-white" />
+      ),
     },
     {
       title: "Phone Support",
       desc: "Call us during business hours.",
-      icon: <FaPhoneAlt className="text-2xl text-teal-400" />,
+      icon: (
+        <FaPhoneAlt className="text-[22px] text-black drop-shadow-sm transition-colors duration-300 dark:text-white" />
+      ),
     },
     {
       title: "Email Support",
       desc: "Write us about any Assistance or Feedback.",
-      icon: <FaEnvelope className="text-2xl text-teal-400" />,
+      icon: (
+        <FaEnvelope className="text-[22px] text-black drop-shadow-sm transition-colors duration-300 dark:text-white" />
+      ),
     },
   ];
 
@@ -205,8 +213,8 @@ export default function SupportPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
             >
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-teal-100 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700 shadow-sm backdrop-blur dark:border-teal-900/60 dark:bg-slate-900/70 dark:text-teal-300">
-                <Sparkles className="h-4 w-4" />
+              <div className="inline-flex w-fit items-center gap-2.5 rounded-full border border-teal-200/80 bg-gradient-to-r from-white via-teal-50/60 to-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-black shadow-md shadow-teal-100/60 backdrop-blur dark:border-teal-800/50 dark:from-slate-900/90 dark:via-teal-950/30 dark:to-slate-900/90 dark:text-slate-100 dark:shadow-teal-900/20">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
                 Proudly loved by the community
               </div>
 
@@ -214,13 +222,15 @@ export default function SupportPage() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.22, duration: 0.45 }}
-                className="w-full max-w-3xl rounded-3xl border border-teal-100 bg-white/85 p-5 shadow-lg shadow-teal-100/60 backdrop-blur dark:border-teal-900/60 dark:bg-slate-900/80 dark:shadow-none"
+                className="group w-full max-w-3xl rounded-3xl bg-gradient-to-br from-teal-50 to-white dark:from-teal-950/20 dark:to-slate-900/50 hover:from-teal-100/50 dark:hover:from-teal-900/30 transition-all duration-300 border-2 border-teal-200/60 dark:border-teal-900/40 hover:border-teal-300/80 dark:hover:border-teal-700/60 p-6 shadow-md shadow-teal-100/40 dark:shadow-none"
               >
                 <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_140px] md:items-center">
                   <div className="space-y-4">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
-                      <Heart className="h-4 w-4 fill-current" />
-                      <span>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gradient-to-br from-teal-500 to-cyan-500 rounded-full p-2.5 shadow-lg shadow-teal-500/30 border border-white/30 transition-transform group-hover:scale-110 w-fit shrink-0">
+                        <Heart className="h-4 w-4 text-white fill-current" />
+                      </div>
+                      <span className="text-sm font-semibold text-teal-700 dark:text-teal-300">
                         {communityLikes.toLocaleString()} likes and growing
                       </span>
                     </div>
@@ -238,9 +248,9 @@ export default function SupportPage() {
                   <motion.button
                     type="button"
                     onClick={openFeedbackToast}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="inline-flex min-h-0 items-center justify-center rounded-2xl bg-teal-500 px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-teal-600"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-flex min-h-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-500/30 border border-white/20 transition-all duration-200 hover:from-teal-600 hover:to-cyan-600"
                   >
                     Leave quick feedback
                   </motion.button>
@@ -257,8 +267,14 @@ export default function SupportPage() {
               >
                 <div className="space-y-4">
                   <h1 className="max-w-3xl text-3xl font-bold leading-tight text-gray-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                    We&apos;re here to{" "}
-                    <span className="text-teal-500">help</span>, anytime.
+                    We&apos;re here{" "}
+                    <span
+                      style={{ fontFamily: "cursive" }}
+                      className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-600 font-medium italic drop-shadow-sm"
+                    >
+                      to help
+                    </span>
+                    , anytime.
                   </h1>
 
                   <p className="max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base">
@@ -286,11 +302,11 @@ export default function SupportPage() {
                   </motion.span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {supportOptions.map((item, index) => (
                     <motion.div
                       key={item.title}
-                      className="group flex cursor-pointer items-start gap-4 overflow-hidden rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 hover:border-teal-100 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-teal-700"
+                      className="group flex cursor-pointer items-start gap-5 overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 p-5 shadow-sm shadow-teal-100/10 backdrop-blur-md transition-all duration-300 hover:border-teal-300/80 hover:bg-gradient-to-br hover:from-white hover:to-teal-50/50 hover:shadow-lg hover:shadow-teal-200/30 dark:border-slate-700/60 dark:bg-slate-800/60 dark:hover:border-teal-700/60 dark:hover:from-slate-800 dark:hover:to-teal-950/40 dark:hover:shadow-teal-900/30"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
@@ -302,18 +318,18 @@ export default function SupportPage() {
                       onClick={() => handleOptionClick(item.title)}
                     >
                       <motion.div
-                        className="shrink-0"
-                        whileHover={{ scale: 1.1 }}
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-50 to-cyan-50 shadow-inner ring-1 ring-teal-100/80 transition-all duration-300 group-hover:from-teal-100 group-hover:to-cyan-100 dark:from-teal-950/40 dark:to-cyan-950/20 dark:ring-teal-900/50 dark:group-hover:from-teal-900/60 dark:group-hover:to-cyan-900/40"
+                        whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.2 }}
                       >
                         {item.icon}
                       </motion.div>
 
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate font-semibold text-slate-900 transition-colors duration-200 group-hover:text-teal-500 dark:text-slate-100">
+                      <div className="min-w-0 flex-1 pt-1">
+                        <h3 className="truncate font-semibold text-slate-900 transition-colors duration-300 group-hover:text-teal-600 dark:text-slate-100 dark:group-hover:text-teal-400">
                           {item.title}
                         </h3>
-                        <p className="mt-1 text-sm text-slate-600 line-clamp-2 dark:text-slate-300">
+                        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                           {item.desc}
                         </p>
                       </div>

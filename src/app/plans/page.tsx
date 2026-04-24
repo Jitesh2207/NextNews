@@ -39,15 +39,15 @@ const planCatalog = [
     name: "Pro",
     monthlyPrice: 79,
     yearlyPrice: 790,
-    desc: "For regular readers who want deeper coverage, more control, and early premium value.",
+    desc: "Ideal for regular readers seeking enhanced customization, deeper content coverage, and priority access to premium features.",
     featured: true,
     credits: {
       monthly: "8,000 API call credits per month",
       yearly: "200,000 API call credits per year",
     },
     features: [
-      "Everything is more polished with Pro",
-      "Deeper personalization controls",
+      "Enhanced and refined interface",
+      "Advanced personalization controls",
       "Higher AI summary and assistant limits",
       "Priority access to premium reader tools",
       "Tailored specific space for Pro users in the app",
@@ -57,19 +57,19 @@ const planCatalog = [
     name: "Pro+",
     monthlyPrice: 199,
     yearlyPrice: 1990,
-    desc: "Built for power users who want the fullest NextNews experience as advanced.",
+    desc: "Designed for power users who want unlimited access to all NextNews features and priority support.",
     credits: {
       monthly: "45,000 API call credits per month",
       yearly: "Unlimited API call credits per year",
     },
     features: [
-      "Pro+ includes you in the inner circle of NextNews",
-      "Expanded usage limits with Regions and AI",
-      "Early access to upcoming premium features",
-      "Unlimited access to all premium News and AI API calls for Pro+ users",
-      "Priority support and direct line for feedback and feature requests",
-      "Access to exclusive Pro+ community and events",
-      "Deeply explained AI insights and analytics about personalizations and suggestions",
+      "Exclusive Pro+ member benefits and recognition",
+      "Expanded usage limits for all premium services",
+      "Early access to new premium features",
+      "Unlimited API calls for news and AI services",
+      "Priority customer support with dedicated assistance",
+      "Exclusive community access and special events",
+      "Advanced AI analytics and personalized insights",
     ],
   },
 ];
@@ -98,6 +98,25 @@ const productPerks = [
     icon: Radio,
     title: "Growing Platform",
     desc: "Subscriptions support a product that continues expanding across live coverage, support tools, and premium content.",
+  },
+];
+
+const perkColors = [
+  {
+    card: "from-teal-50 to-white dark:from-teal-950/20 dark:to-slate-900/50 hover:from-teal-100/50 dark:hover:from-teal-900/30 border-teal-200/60 dark:border-teal-900/40 hover:border-teal-300/80 dark:hover:border-teal-700/60",
+    icon: "from-teal-500 to-cyan-500 shadow-teal-500/30",
+  },
+  {
+    card: "from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900/50 hover:from-blue-100/50 dark:hover:from-blue-900/30 border-blue-200/60 dark:border-blue-900/40 hover:border-blue-300/80 dark:hover:border-blue-700/60",
+    icon: "from-blue-500 to-indigo-500 shadow-blue-500/30",
+  },
+  {
+    card: "from-indigo-50 to-white dark:from-indigo-950/20 dark:to-slate-900/50 hover:from-indigo-100/50 dark:hover:from-indigo-900/30 border-indigo-200/60 dark:border-indigo-900/40 hover:border-indigo-300/80 dark:hover:border-indigo-700/60",
+    icon: "from-indigo-500 to-blue-500 shadow-indigo-500/30",
+  },
+  {
+    card: "from-emerald-50 to-white dark:from-emerald-950/20 dark:to-slate-900/50 hover:from-emerald-100/50 dark:hover:from-emerald-900/30 border-emerald-200/60 dark:border-emerald-900/40 hover:border-emerald-300/80 dark:hover:border-emerald-700/60",
+    icon: "from-emerald-500 to-teal-500 shadow-emerald-500/30",
   },
 ];
 
@@ -224,13 +243,19 @@ export default function PlansPage() {
       <section className="relative overflow-hidden px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         <div className="relative z-10 mx-auto max-w-5xl text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Plans for Better <span className="text-teal-600">NextNews</span>{" "}
-            Experience
+            Choose Your Perfect{" "}
+            <br />
+            <span
+              style={{ fontFamily: "cursive" }}
+              className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-600 font-medium italic drop-shadow-sm"
+            >
+              NextNews Plan
+            </span>
           </h1>
           <p className="mx-auto mb-8 max-w-3xl text-xl text-slate-600 dark:text-slate-300">
-            Choose a plan that fits how you read. Whether you want a cleaner
-            daily experience or deeper premium access, NextNews is built to grow
-            with serious readers.🫡
+            Find the plan that matches your reading needs. Whether you prefer a
+            streamlined daily experience or comprehensive premium features,
+            NextNews adapts to help you stay informed.
           </p>
 
           <div className="mb-10 flex flex-wrap items-center justify-center gap-3">
@@ -321,24 +346,24 @@ export default function PlansPage() {
 
       <section className="px-4 py-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {productPerks.map((item) => {
+          {productPerks.map((item, index) => {
             const IconComponent = item.icon;
+            const colors = perkColors[index % perkColors.length];
             return (
               <motion.div
                 key={item.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -4 }}
-                className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-800/85"
+                className={`group relative rounded-3xl bg-gradient-to-br ${colors.card} p-8 flex flex-col items-start text-left transition-all duration-300 border-2`}
               >
-                <div className="mb-4 inline-flex rounded-xl bg-teal-50 p-3 text-teal-600 dark:bg-teal-950/40 dark:text-teal-300">
-                  <IconComponent className="h-5 w-5" />
+                <div className={`mb-5 bg-gradient-to-br ${colors.icon} rounded-full p-2.5 shadow-lg border border-white/30 transition-transform group-hover:scale-110 w-fit`}>
+                  <IconComponent size={20} className="text-white" />
                 </div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                <h2 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
                   {item.title}
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                   {item.desc}
                 </p>
               </motion.div>
@@ -347,7 +372,11 @@ export default function PlansPage() {
         </div>
       </section>
 
-      <section className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="h-px bg-gradient-to-r from-transparent via-teal-400/60 to-transparent dark:via-teal-600/40" />
+      </div>
+
+      <section className="relative overflow-hidden px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto grid max-w-6xl items-center justify-items-center gap-8 xl:grid-cols-3">
           {planCatalog.map((plan, index) => {
             const price = yearly ? plan.yearlyPrice : plan.monthlyPrice;
@@ -455,7 +484,7 @@ export default function PlansPage() {
             <div className="text-center md:text-left">
               <h3 className="mb-4 text-lg font-bold">NextNews</h3>
               <p className="text-sm text-slate-300">
-                Your gateway to trusted and reliable news.⚡
+                Your trusted source for reliable, quality news.
               </p>
             </div>
             <div className="flex flex-col items-center justify-center md:items-end">
@@ -563,9 +592,9 @@ export default function PlansPage() {
                       {selectedPlan} selected
                     </h3>
                     <p className="leading-relaxed text-slate-600 dark:text-slate-300">
-                      Payment flows are still being finalized. For now, this
-                      page previews the upcoming premium experience and
-                      available plan direction for NextNews.🤝
+                      Payment systems are currently in preparation. This page
+                      displays our upcoming premium features and planned
+                      offerings to help you explore available options.
                     </p>
                     <button
                       onClick={() => setSelectedPlan(null)}
@@ -704,10 +733,11 @@ export default function PlansPage() {
             >
               <PartyPopper className="mb-4 h-14 w-14 text-amber-300" />
               <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-                Thank You So Much! 🎉
+                Thank You!
               </h2>
               <p className="mt-3 text-base text-slate-200 sm:text-lg">
-                Your kindness means a lot. Have an amazing day! 🛐✨
+                Your support helps us improve NextNews. We appreciate your
+                interest.
               </p>
             </motion.div>
           </motion.div>
