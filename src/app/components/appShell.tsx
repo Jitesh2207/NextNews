@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Navbar from "./navbar";
 import Sidebar from "./sidebar";
 import Template from "../template";
+import GoalCompletionBanner from "./GoalCompletionBanner";
+import AuthSessionSync from "../auth/register/components/authSessionSync";
 import {
   APPEARANCE_EVENT,
   applyAppearanceSettings,
@@ -39,7 +41,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener(APPEARANCE_EVENT, handleAppearanceChange);
-    return () => window.removeEventListener(APPEARANCE_EVENT, handleAppearanceChange);
+    return () =>
+      window.removeEventListener(APPEARANCE_EVENT, handleAppearanceChange);
   }, []);
 
   useEffect(() => {
@@ -52,7 +55,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       applyDarkMode(readDarkModeSetting());
     };
 
-    window.addEventListener(ACCOUNT_SETTINGS_EVENT, handleAccountSettingsChange);
+    window.addEventListener(
+      ACCOUNT_SETTINGS_EVENT,
+      handleAccountSettingsChange,
+    );
     window.addEventListener("storage", handleStorageChange);
     return () => {
       window.removeEventListener(
@@ -65,6 +71,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <MotionConfig reducedMotion={appearance.reducedMotion ? "always" : "never"}>
+      <AuthSessionSync />
+      <GoalCompletionBanner />
       <Navbar
         onMenuToggle={() => setIsSidebarOpen((prev) => !prev)}
         isMobileOpen={isSidebarOpen}
@@ -76,7 +84,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           isDesktopCollapsed={isDesktopCollapsed}
           onToggleDesktop={() => setIsDesktopCollapsed((prev) => !prev)}
         />
-        <main className={`min-w-0 flex-1 overflow-x-hidden transition-[margin] duration-300 ${isDesktopCollapsed ? "md:ml-20" : "md:ml-72"}`}>
+        <main
+          className={`min-w-0 flex-1 overflow-x-hidden transition-[margin] duration-300 ${isDesktopCollapsed ? "md:ml-20" : "md:ml-72"}`}
+        >
           <Template>{children}</Template>
         </main>
       </div>

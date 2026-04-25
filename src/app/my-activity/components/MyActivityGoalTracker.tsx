@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Flame, Target } from "lucide-react";
 import { Panel, softSpring } from "./MyActivityUi";
+import LottiePlayer from "../../components/LottiePlayer";
 
 interface MyActivityGoalTrackerProps {
   currentWeekProgress: number;
@@ -26,6 +27,7 @@ export default function MyActivityGoalTracker({
   readingStreak,
 }: MyActivityGoalTrackerProps) {
   const targetOptions = [3, 5, 8, 10];
+  const isGoalComplete = currentWeekProgress >= weeklyGoal;
 
   return (
     <Panel
@@ -62,7 +64,7 @@ export default function MyActivityGoalTracker({
           transition={{ type: "spring", stiffness: 40, damping: 12 }}
           className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500 shadow-[0_0_16px_-4px_rgba(16,185,129,0.5)]"
         />
-        {currentWeekProgress >= weeklyGoal ? (
+        {isGoalComplete ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -71,10 +73,24 @@ export default function MyActivityGoalTracker({
         ) : null}
       </div>
 
-      <div className="flex items-center justify-between text-sm mb-8">
-        <p className="font-medium text-slate-600 dark:text-slate-300">
-          {currentWeekProgress >= weeklyGoal ? (
-            "🌟 Goal reached! Amazing work this week."
+      <div className="flex flex-col gap-3 text-sm mb-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="font-medium text-slate-600 dark:text-slate-300">
+          {isGoalComplete ? (
+            <span className="inline-flex items-start gap-3 sm:items-center">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100/80 ring-1 ring-emerald-200 dark:bg-emerald-900/30 dark:ring-emerald-800/50"
+                aria-hidden="true"
+              >
+                <LottiePlayer
+                  src="/actiivity/congrats.json"
+                  className="h-10 w-10"
+                  loop={true}
+                />
+              </span>
+              <span className="leading-6">
+                Goal reached! Amazing work this week.
+              </span>
+            </span>
           ) : (
             <>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
@@ -83,8 +99,10 @@ export default function MyActivityGoalTracker({
               to hit your weekly goal
             </>
           )}
+        </div>
+        <p className="text-xs text-slate-400 dark:text-slate-500 sm:text-right">
+          Resets Mon
         </p>
-        <p className="text-xs text-slate-400 dark:text-slate-500">Resets Mon</p>
       </div>
 
       <div className="mb-6">
@@ -126,7 +144,7 @@ export default function MyActivityGoalTracker({
         </div>
       </div>
 
-      <div>
+      <div id="weekly-goal-target" className="scroll-mt-24">
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
           Set weekly target
         </p>
@@ -147,12 +165,18 @@ export default function MyActivityGoalTracker({
           <div className="flex items-center gap-2">
             <input
               type="number"
-              min="1"
-              max="99"
+              max="100"
               value={!targetOptions.includes(weeklyGoal) ? weeklyGoal : ""}
               placeholder="Custom"
               onChange={(e) =>
-                onSetWeeklyGoal(parseInt(e.target.value, 10) || 1)
+                {
+                  const val = parseInt(e.target.value, 10) || 1;
+                  if (val > 100) {
+                    window.alert("Maximum goal cannot exceed 100");
+                    return;
+                  }
+                  onSetWeeklyGoal(val);
+                }
               }
               className={`h-10 w-24 rounded-2xl border px-3 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 dark:bg-slate-800/60 dark:text-slate-300 ${
                 !targetOptions.includes(weeklyGoal)
