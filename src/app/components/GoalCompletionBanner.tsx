@@ -175,7 +175,7 @@ export default function GoalCompletionBanner() {
       initial={{ opacity: 0, y: -14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={softSpring}
-      className="fixed inset-x-0 top-[88px] z-[60] flex justify-center px-4 sm:top-[96px]"
+      className="fixed inset-x-0 top-[88px] z-30 flex justify-center px-4 sm:top-[96px]"
     >
       <div className="w-full max-w-sm">
         <motion.div

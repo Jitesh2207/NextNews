@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Loader2, Sparkles } from "lucide-react";
 import { incrementPersonalizationSuggestionUsage } from "@/lib/activityAnalytics";
+import { getExploreRegion } from "@/lib/explore";
 import { PERSONALIZATION_PROMO_HIDE_EVENT } from "./personalizatioPopup";
 
 type TopicSuggestion = {
@@ -27,6 +28,7 @@ const cardVariants: Variants = {
 interface PersonalizationAiSuggestionsProps {
   favoriteTopics: string[];
   availableTopics: string[];
+  selectedRegion?: string;
   onAddTopic: (topic: string) => void;
   onErrorMessage: (text: string) => void;
 }
@@ -34,6 +36,7 @@ interface PersonalizationAiSuggestionsProps {
 export default function PersonalizationAiSuggestions({
   favoriteTopics,
   availableTopics,
+  selectedRegion,
   onAddTopic,
   onErrorMessage,
 }: PersonalizationAiSuggestionsProps) {
@@ -76,6 +79,9 @@ export default function PersonalizationAiSuggestions({
         return;
       }
 
+      const regionConfig = getExploreRegion(selectedRegion);
+      const countryCode = regionConfig?.country || "us";
+
       const response = await fetch("/api/topic-suggestions", {
         method: "POST",
         headers: {
@@ -85,7 +91,7 @@ export default function PersonalizationAiSuggestions({
         body: JSON.stringify({
           availableTopics,
           selectedTopics: favoriteTopics,
-          country: "us",
+          country: countryCode,
         }),
       });
 

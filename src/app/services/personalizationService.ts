@@ -6,6 +6,7 @@ export const PERSONALIZATION_UPDATED_EVENT = "personalization-updated";
 export interface PersonalizationInput {
   favoriteSources: string[];
   favoriteTopics: string[];
+  favoriteRegions?: string[];
 }
 
 export interface UserPersonalization {
@@ -14,6 +15,7 @@ export interface UserPersonalization {
   user_email: string;
   favorite_sources: string[];
   favorite_topics: string[];
+  favorite_regions?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -86,6 +88,9 @@ export async function getUserPersonalization() {
     favorite_topics: Array.isArray(data.favorite_topics)
       ? (data.favorite_topics as string[])
       : [],
+    favorite_regions: Array.isArray(data.favorite_regions)
+      ? (data.favorite_regions as string[])
+      : [],
   };
 
   return { data: parsedData, error: null };
@@ -97,6 +102,7 @@ export async function saveUserPersonalization(input: PersonalizationInput) {
 
   const favoriteSources = normalizeUniqueStrings(input.favoriteSources);
   const favoriteTopics = normalizeUniqueStrings(input.favoriteTopics);
+  const favoriteRegions = normalizeUniqueStrings(input.favoriteRegions || []);
 
   return supabase.from("user_personalization").upsert(
     {
@@ -104,6 +110,7 @@ export async function saveUserPersonalization(input: PersonalizationInput) {
       user_email: userEmail,
       favorite_sources: favoriteSources,
       favorite_topics: favoriteTopics,
+      favorite_regions: favoriteRegions,
       updated_at: new Date().toISOString(),
     },
     {

@@ -428,48 +428,48 @@ export default function RegisterPage() {
         description="We are verifying your details, accepting your preferences, and preparing a smoother first view."
       />
 
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-amber-50 via-white to-sky-50 px-4 py-8 sm:px-6 md:py-10">
-        <div className="pointer-events-none absolute -left-14 top-8 h-40 w-40 rounded-full bg-amber-200/40 blur-3xl animate-float-soft motion-reduce:animate-none" />
-        <div className="pointer-events-none absolute -right-16 bottom-8 h-44 w-44 rounded-full bg-sky-200/50 blur-3xl animate-float-soft-delayed motion-reduce:animate-none" />
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-amber-50 via-white to-sky-50 px-4 py-8 sm:px-6 md:py-10 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="pointer-events-none absolute -left-14 top-8 h-40 w-40 rounded-full bg-amber-200/40 blur-3xl animate-float-soft motion-reduce:animate-none dark:bg-amber-900/20" />
+        <div className="pointer-events-none absolute -right-16 bottom-8 h-44 w-44 rounded-full bg-sky-200/50 blur-3xl animate-float-soft-delayed motion-reduce:animate-none dark:bg-sky-900/20" />
 
         <div className="mx-auto grid w-full max-w-5xl gap-6 xl:grid-cols-2 xl:items-stretch">
           {/* ── Left column: branding & info ── */}
-          <section className="animate-fade-up order-2 xl:order-1 flex flex-col justify-center rounded-2xl border border-amber-100 bg-white/90 p-6 shadow-lg shadow-amber-100/50 backdrop-blur transition-transform duration-500 motion-reduce:animate-none motion-reduce:transition-none sm:p-8 xl:hover:-translate-y-0.5">
-            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-wide text-amber-700">
+          <section className="animate-fade-up order-2 xl:order-1 flex flex-col justify-center rounded-2xl border border-amber-100 bg-white/90 p-6 shadow-lg shadow-amber-100/50 backdrop-blur transition-transform duration-500 motion-reduce:animate-none motion-reduce:transition-none sm:p-8 xl:hover:-translate-y-0.5 dark:border-slate-800/60 dark:bg-slate-900/80 dark:shadow-slate-900/50">
+            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold tracking-wide text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
               <Sparkles className="h-4 w-4" />
               Join NextNews Family
             </div>
 
-            <h1 className="text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-bold leading-tight text-slate-900 sm:text-3xl dark:text-slate-100">
               Create your account and personalize your news flow.
             </h1>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               Get curated categories, saved preferences, and faster access
               across devices in under a minute.
             </p>
 
             <div className="mt-6 grid gap-2 text-sm sm:grid-cols-2">
-              <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-center font-medium text-sky-700">
+              <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-center font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-400">
                 Save &amp; Organize Notes
               </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-center font-medium text-amber-700">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-center font-medium text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
                 Personalized Feed Setup
               </div>
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-center font-medium text-emerald-700">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-center font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
                 Reliable and secure
               </div>
-              <div className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-center font-medium text-violet-700">
+              <div className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 text-center font-medium text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400">
                 Smart AI Recommendations
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-              <p className="text-xs leading-relaxed text-slate-500">
+            <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 By creating an account you agree to our{" "}
                 <Link
                   href="/terms-and-conditions"
                   target="_blank"
-                  className="font-semibold text-slate-700 underline hover:text-slate-900"
+                  className="font-semibold text-slate-700 underline hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
                 >
                   Terms &amp; Conditions
                 </Link>{" "}
@@ -477,7 +477,7 @@ export default function RegisterPage() {
                 <Link
                   href="/privacy-policy"
                   target="_blank"
-                  className="font-semibold text-slate-700 underline hover:text-slate-900"
+                  className="font-semibold text-slate-700 underline hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
                 >
                   Privacy Policy
                 </Link>
@@ -487,18 +487,18 @@ export default function RegisterPage() {
           </section>
 
           {/* ── Right column: form ── */}
-          <section className="animate-fade-up order-1 xl:order-2 flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-100/60 backdrop-blur transition-transform duration-500 motion-reduce:animate-none motion-reduce:transition-none sm:p-8 xl:hover:-translate-y-0.5">
-            <h2 className="mb-1 text-xl font-bold text-slate-900">
+          <section className="animate-fade-up order-1 xl:order-2 flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-100/60 backdrop-blur transition-transform duration-500 motion-reduce:animate-none motion-reduce:transition-none sm:p-8 xl:hover:-translate-y-0.5 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-slate-900/50">
+            <h2 className="mb-1 text-xl font-bold text-slate-900 dark:text-slate-100">
               Get started for free
             </h2>
-            <p className="mb-6 text-sm text-slate-500">
+            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
               Enter your details below to create your account.
             </p>
 
             <input
               type="email"
               placeholder="Email address"
-              className="mb-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-300 focus:-translate-y-0.5 focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="mb-3 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-300 focus:-translate-y-0.5 focus:border-slate-900 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
@@ -506,7 +506,7 @@ export default function RegisterPage() {
             <input
               type="password"
               placeholder="Password"
-              className="mb-4 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-300 focus:-translate-y-0.5 focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="mb-4 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-300 focus:-translate-y-0.5 focus:border-slate-900 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
               onChange={(e) => setPassword(e.target.value)}
               value={password}
             />
@@ -514,7 +514,7 @@ export default function RegisterPage() {
             <button
               onClick={handleRegister}
               disabled={loading || isCooldownActive || termsSubmitting}
-              className="w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-300/60 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-300/60 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:hover:shadow-slate-100/20"
             >
               {loading
                 ? "Checking your account..."
@@ -523,29 +523,29 @@ export default function RegisterPage() {
                   : "Verify Account"}
             </button>
 
-            <p className="mt-2 text-center text-xs text-slate-400">
+            <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
               View our{" "}
               <button
                 type="button"
                 onClick={() => openTermsModal("email-signup")}
-                className="text-slate-500 underline hover:text-slate-700"
+                className="text-slate-500 underline hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
               >
                 Terms &amp; Conditions
               </button>
             </p>
 
             <div className="my-5 flex items-center gap-3">
-              <div className="h-px w-full bg-slate-200" />
-              <p className="shrink-0 text-xs font-medium uppercase tracking-wide text-slate-400">
+              <div className="h-px w-full bg-slate-200 dark:bg-slate-800" />
+              <p className="shrink-0 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 or
               </p>
-              <div className="h-px w-full bg-slate-200" />
+              <div className="h-px w-full bg-slate-200 dark:bg-slate-800" />
             </div>
 
             <button
               onClick={handleGoogleRegister}
               disabled={googleLoading || termsSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-medium text-slate-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-200/60 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-medium text-slate-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md hover:shadow-slate-200/60 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
             >
               <LottiePlayer
                 src="/auth/Google Logo.json"
@@ -555,16 +555,16 @@ export default function RegisterPage() {
             </button>
 
             {errorMessage ? (
-              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
                 {errorMessage}
               </p>
             ) : null}
 
-            <div className="mt-5 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-              <p className="text-xs font-semibold text-sky-700">
+            <div className="mt-5 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 dark:border-sky-900/50 dark:bg-sky-900/20">
+              <p className="text-xs font-semibold text-sky-700 dark:text-sky-400">
                 Already have an account?
               </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-sky-600">
+              <p className="mt-0.5 text-xs leading-relaxed text-sky-600 dark:text-sky-300">
                 Enter your existing email &amp; password above and it will sign
                 you straight in.
               </p>
@@ -588,15 +588,15 @@ export default function RegisterPage() {
               animate="animate"
               exit="exit"
               transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.28 }}
-              className="w-full rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:max-w-md sm:rounded-2xl"
+              className="w-full rounded-t-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:max-w-md sm:rounded-2xl dark:border-slate-800 dark:bg-slate-900"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-400">
                     Terms & Conditions
                   </p>
-                  <h2 className="mt-2 text-xl font-bold text-slate-900">
+                  <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100">
                     Accept the policy before signup
                   </h2>
                 </div>
@@ -604,20 +604,20 @@ export default function RegisterPage() {
                   type="button"
                   onClick={closeTermsModal}
                   disabled={termsSubmitting}
-                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
                   aria-label="Close Terms popup"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <p className="mt-3 text-sm leading-6 text-slate-600">
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                 Please review and accept our Terms &amp; Conditions to continue.
                 By agreeing, you confirm that you have read and understood how
                 NextNews collects, uses, and protects your information.
               </p>
 
-              <label className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              <label className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={termsAccepted}
@@ -627,14 +627,14 @@ export default function RegisterPage() {
                       setTermsError("");
                     }
                   }}
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400 dark:border-slate-600 dark:bg-slate-950 dark:checked:bg-slate-100 dark:focus:ring-slate-700"
                 />
                 <span>
                   I agree to the{" "}
                   <Link
                     href="/terms-and-conditions"
                     target="_blank"
-                    className="font-semibold text-sky-700 underline"
+                    className="font-semibold text-sky-700 underline dark:text-sky-400"
                   >
                     Terms & Conditions
                   </Link>
@@ -643,7 +643,7 @@ export default function RegisterPage() {
               </label>
 
               {termsError ? (
-                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
                   {termsError}
                 </p>
               ) : null}
@@ -653,7 +653,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={closeTermsModal}
                   disabled={termsSubmitting}
-                  className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </button>
@@ -661,7 +661,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleTermsSubmit}
                   disabled={termsSubmitting}
-                  className="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
                 >
                   {termsSubmitting ? "Submitting..." : "Submit"}
                 </button>

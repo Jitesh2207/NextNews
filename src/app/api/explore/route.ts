@@ -354,7 +354,7 @@ async function fetchAiInsights(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "HTTP-Referer":
-        process.env.OPENROUTER_SITE_URL || "https://next-news-delta-brown.vercel.app",
+        process.env.OPENROUTER_SITE_URL || "https://www.nextnews.co.in",
       "X-Title": process.env.OPENROUTER_APP_NAME || "NextNews",
     },
     body: JSON.stringify({

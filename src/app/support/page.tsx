@@ -272,9 +272,9 @@ export default function SupportPage() {
                       style={{ fontFamily: "cursive" }}
                       className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-600 font-medium italic drop-shadow-sm"
                     >
-                      to help
+                      to help,
                     </span>
-                    , anytime.
+                    {" "}anytime.
                   </h1>
 
                   <p className="max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base">
