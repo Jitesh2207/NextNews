@@ -118,6 +118,9 @@ export default function AuthSessionSync() {
 
     const stopAuthenticating = () => {
       clearPendingSessionFallbackTimer();
+      // Always clear the pending terms key so a stale localStorage entry
+      // never re-triggers the boot loader on the next page load.
+      clearPendingTermsAcceptance();
       hideAuthBootLoader();
       if (isMounted) {
         setIsAuthenticating(false);
@@ -234,6 +237,14 @@ export default function AuthSessionSync() {
       cleanAuthCallbackUrl();
 
       if (session?.user) {
+        // Only run the finalization flow when there is actual pending auth
+        // work (OAuth callback or pending terms). If the user is simply
+        // already logged in and loading a page, skip the overlay entirely.
+        if (!hasPendingAuthWork) {
+          stopAuthenticating();
+          return;
+        }
+
         await finalizeSession(
           session.user.id,
           session.user.email,
@@ -242,6 +253,9 @@ export default function AuthSessionSync() {
       } else if (hasPendingAuthWork) {
         clearPendingSessionFallbackTimer();
         pendingSessionFallbackTimer.current = setTimeout(() => {
+          // Clear the stale pending key before hiding so it cannot
+          // retrigger the boot loader on the next page visit.
+          clearPendingTermsAcceptance();
           if (isMounted) {
             hideAuthBootLoader();
             setIsAuthenticating(false);
@@ -261,9 +275,16 @@ export default function AuthSessionSync() {
       cleanAuthCallbackUrl();
 
       if (!session?.user) {
-        if (!hasPendingTermsAcceptanceSignal()) {
-          stopAuthenticating();
-        }
+        // No active session — always stop and clean up.
+        stopAuthenticating();
+        return;
+      }
+
+      // Supabase fires INITIAL_SESSION automatically for every already-
+      // logged-in user on every page load. Only process the session when
+      // there is real pending auth work to avoid showing the overlay on
+      // normal navigations.
+      if (!hasAuthCallbackSignal() && !hasPendingTermsAcceptanceSignal()) {
         return;
       }
 
