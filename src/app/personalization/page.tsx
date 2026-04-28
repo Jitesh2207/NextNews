@@ -24,6 +24,7 @@ import {
   saveUserPersonalization,
 } from "../services/personalizationService";
 import PersonalizationAiSuggestions from "./components/personalizationAiSuggestions";
+import PersonalizationRegionSelector from "./components/PersonalizationRegionSelector";
 import StatusPopup from "../components/statusPopup";
 import PersonalizationPromoAd, {
   PERSONALIZATION_PROMO_DISMISS_KEY,
@@ -74,6 +75,7 @@ const cardVariants: Variants = {
 export default function PersonalizationPage() {
   const [favoriteSources, setFavoriteSources] = useState<string[]>([]);
   const [favoriteTopics, setFavoriteTopics] = useState<string[]>([]);
+  const [favoriteRegions, setFavoriteRegions] = useState<string[]>([]);
   const [topicSearch, setTopicSearch] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -88,8 +90,8 @@ export default function PersonalizationPage() {
   const [promoResetKey, setPromoResetKey] = useState(0);
 
   const hasSelection = useMemo(
-    () => favoriteSources.length > 0 || favoriteTopics.length > 0,
-    [favoriteSources.length, favoriteTopics.length],
+    () => favoriteSources.length > 0 || favoriteTopics.length > 0 || favoriteRegions.length > 0,
+    [favoriteSources.length, favoriteTopics.length, favoriteRegions.length],
   );
 
   const filteredTopics = useMemo(
@@ -151,6 +153,7 @@ export default function PersonalizationPage() {
         if (!data) {
           setFavoriteSources([]);
           setFavoriteTopics(DEFAULT_TOPIC_SELECTION);
+          setFavoriteRegions([]);
           return;
         }
 
@@ -160,10 +163,11 @@ export default function PersonalizationPage() {
 
         setFavoriteSources(data.favorite_sources ?? []);
         setFavoriteTopics(
-          persistedTopics.length > 0
+          Array.isArray(data.favorite_topics) && data.favorite_topics.length > 0
             ? persistedTopics
             : DEFAULT_TOPIC_SELECTION,
         );
+        setFavoriteRegions(data.favorite_regions ?? []);
       } catch (loadError: unknown) {
         if (!mounted) return;
         if (loadError instanceof Error && loadError.name === "AbortError") {
@@ -215,6 +219,7 @@ export default function PersonalizationPage() {
       const { error: saveError } = await saveUserPersonalization({
         favoriteSources,
         favoriteTopics,
+        favoriteRegions,
       });
 
       if (saveError) {
@@ -253,6 +258,20 @@ export default function PersonalizationPage() {
     }
 
     setFavoriteTopics((prev) => toggleValue(prev, topic));
+  };
+
+  const handleRegionToggle = (region: string) => {
+    const isSelected = favoriteRegions.includes(region);
+
+    if (!isSelected && favoriteRegions.length >= 1) {
+      setSuggestedTopicToast({
+        tone: "warning",
+        text: `Limit of 1 region reached.`,
+      });
+      return;
+    }
+
+    setFavoriteRegions((prev) => toggleValue(prev, region));
   };
 
   const removeFavoriteTopic = (topic: string) => {
@@ -304,6 +323,7 @@ export default function PersonalizationPage() {
 
       setFavoriteSources([]);
       setFavoriteTopics([]);
+      setFavoriteRegions([]);
       localStorage.removeItem(PERSONALIZATION_PROMO_DISMISS_KEY);
       setPromoResetKey((prev) => prev + 1);
       broadcastPersonalizationUpdated();
@@ -458,6 +478,19 @@ export default function PersonalizationPage() {
           custom={2}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/85 p-6 shadow-sm backdrop-blur sm:p-8"
         >
+          <PersonalizationRegionSelector 
+            favoriteRegions={favoriteRegions}
+            onToggleRegion={handleRegionToggle}
+          />
+        </motion.section>
+
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={sectionVariants}
+          custom={3}
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/85 p-6 shadow-sm backdrop-blur sm:p-8"
+        >
           {/* Topics heading — full width divider */}
           <div className="mb-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
@@ -597,12 +630,13 @@ export default function PersonalizationPage() {
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
-          custom={3}
+          custom={4}
           id="ai-topic-suggestions"
         >
           <PersonalizationAiSuggestions
             favoriteTopics={favoriteTopics}
             availableTopics={AVAILABLE_TOPICS}
+            selectedRegion={favoriteRegions[0]}
             onAddTopic={handleAddSuggestedTopic}
             onErrorMessage={(text) => {
               setPopupMessage({ tone: "error", text });
@@ -614,7 +648,7 @@ export default function PersonalizationPage() {
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
-          custom={4}
+          custom={5}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/85 p-6 shadow-sm backdrop-blur sm:p-8"
         >
           <div className="mb-6 flex items-center gap-3">
@@ -695,6 +729,35 @@ export default function PersonalizationPage() {
                   </div>
                 </div>
               )}
+
+              {favoriteRegions.length > 0 && (
+                <div>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
+                      Preferred Region
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {favoriteRegions.map((region) => (
+                      <div
+                        key={region}
+                        className="group flex flex-wrap items-center gap-2 rounded-full border border-purple-200/80 bg-purple-50 px-3 py-1.5 text-sm font-medium text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:shadow dark:border-purple-800/60 dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-900/50 sm:px-4"
+                      >
+                        <span className="truncate">{region}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFavoriteRegions((prev) => prev.filter(r => r !== region))}
+                          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100/70 text-red-600 transition-colors hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-600"
+                          aria-label={`Remove ${region}`}
+                        >
+                          <X size={12} strokeWidth={2.5} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -721,6 +784,12 @@ export default function PersonalizationPage() {
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 border border-emerald-200/60 dark:border-emerald-800/60 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                       {favoriteTopics.length} topic
                       {favoriteTopics.length !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {favoriteRegions.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-purple-100/80 dark:bg-purple-900/40 border border-purple-200/60 dark:border-purple-800/60 px-2.5 py-0.5 text-[11px] font-semibold text-purple-700 dark:text-purple-300">
+                      {favoriteRegions.length} region
+                      {favoriteRegions.length !== 1 ? "s" : ""}
                     </span>
                   )}
                   <span className="text-[11px] text-slate-400 dark:text-slate-500">

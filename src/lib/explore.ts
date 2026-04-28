@@ -23,7 +23,13 @@ export type ExploreRegionId =
   | "middle-east"
   | "africa"
   | "latin-america"
-  | "india";
+  | "india"
+  | "china"
+  | "russia"
+  | "japan"
+  | "east-asia"
+  | "oceania"
+  | "southeast-asia";
 
 export type ExploreArticle = {
   source: { id: string | null; name: string };
@@ -99,6 +105,14 @@ export const EXPLORE_REGIONS: ExploreRegionConfig[] = [
     searchContext: "global international news",
   },
   {
+    id: "india",
+    label: "South Asia",
+    chipLabel: "South Asia",
+    topicQuery:
+      "(South Asia OR India OR Pakistan OR Bangladesh OR Sri Lanka OR Nepal OR New Delhi)",
+    searchContext: "South Asia news",
+  },
+  {
     id: "us",
     label: "United States",
     chipLabel: "US",
@@ -148,12 +162,46 @@ export const EXPLORE_REGIONS: ExploreRegionConfig[] = [
     searchContext: "Latin America news",
   },
   {
-    id: "india",
-    label: "South Asia",
-    chipLabel: "South Asia",
-    topicQuery:
-      "(South Asia OR India OR Pakistan OR Bangladesh OR Sri Lanka OR Nepal OR New Delhi)",
-    searchContext: "South Asia news",
+    id: "china",
+    label: "China",
+    chipLabel: "China",
+    topicQuery: "(China OR Beijing OR Shanghai OR Chinese economy)",
+    searchContext: "China news",
+  },
+  {
+    id: "russia",
+    label: "Russia & Central Asia",
+    chipLabel: "Russia & CA",
+    topicQuery: "(Russia OR Moscow OR Putin OR Central Asia OR Kazakhstan OR Uzbekistan)",
+    searchContext: "Russia and Central Asia news",
+  },
+  {
+    id: "japan",
+    label: "Japan",
+    chipLabel: "Japan",
+    topicQuery: "(Japan OR Tokyo OR Japanese OR BOJ)",
+    searchContext: "Japan news",
+  },
+  {
+    id: "east-asia",
+    label: "East Asia",
+    chipLabel: "East Asia",
+    topicQuery: "(East Asia OR South Korea OR North Korea OR Taiwan OR Hong Kong)",
+    searchContext: "East Asia news",
+  },
+  {
+    id: "oceania",
+    label: "Oceania",
+    chipLabel: "Oceania",
+    topicQuery: "(Oceania OR Australia OR New Zealand OR Pacific Islands)",
+    searchContext: "Oceania news",
+  },
+  {
+    id: "southeast-asia",
+    label: "Southeast Asia",
+    chipLabel: "SE Asia",
+    topicQuery: "(Southeast Asia OR ASEAN OR Singapore OR Indonesia OR Malaysia OR Thailand OR Vietnam OR Philippines)",
+    searchContext: "Southeast Asia news",
   },
 ] as const;
 

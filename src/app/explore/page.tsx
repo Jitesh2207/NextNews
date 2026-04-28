@@ -175,6 +175,16 @@ export default function ExplorePage() {
   const [promoArrowLeft, setPromoArrowLeft] = useState(0);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const regionParam = params.get("region") as ExploreRegionId;
+      if (regionParam) {
+        setSelectedRegion(regionParam);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const syncAuthState = () => {
       const authToken = localStorage.getItem("auth_token")?.trim();
       const authEmail = localStorage.getItem("auth_email")?.trim();
@@ -215,6 +225,12 @@ export default function ExplorePage() {
         setFavoriteTopics(
           Array.isArray(data?.favorite_topics) ? data.favorite_topics : [],
         );
+
+        const params = new URLSearchParams(window.location.search);
+        const hasUrlRegion = params.has("region");
+        if (!hasUrlRegion && Array.isArray(data?.favorite_regions) && data.favorite_regions.length > 0) {
+          setSelectedRegion(data.favorite_regions[0] as ExploreRegionId);
+        }
       } catch {
         if (ignore) return;
         setFollowedSources([]);

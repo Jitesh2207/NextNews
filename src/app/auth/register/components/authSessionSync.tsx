@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "../../../../../lib/superbaseClient";
 import {
   hasAcceptedTerms,
   upsertTermsPolicyAcceptance,
 } from "@/lib/termsPolicy";
 import { persistClientSession } from "@/lib/clientAuth";
-import AuthOnboardingStage from "./authOnboardingStage";
 
 type PendingTermsAcceptance = {
   mode: "email-signup" | "google-signup";
@@ -105,7 +104,6 @@ export default function AuthSessionSync() {
   const pendingSessionFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -118,10 +116,10 @@ export default function AuthSessionSync() {
 
     const stopAuthenticating = () => {
       clearPendingSessionFallbackTimer();
+      // Always clear the pending terms key so a stale localStorage entry
+      // never re-triggers the boot loader on the next page load.
+      clearPendingTermsAcceptance();
       hideAuthBootLoader();
-      if (isMounted) {
-        setIsAuthenticating(false);
-      }
     };
 
     const finalizeSession = async (
@@ -147,10 +145,6 @@ export default function AuthSessionSync() {
           pendingTerms.email === normalizedEmail);
 
       try {
-        if (isMounted) {
-          setIsAuthenticating(true);
-        }
-
         let acceptedTerms = await hasAcceptedTerms(userId);
 
         if (!acceptedTerms && canCreateTermsRecord) {
@@ -187,7 +181,6 @@ export default function AuthSessionSync() {
 
       if (hasPendingAuthWork && isMounted) {
         showAuthBootLoader();
-        setIsAuthenticating(true);
       }
 
       const authCallbackCode = getAuthCallbackCode();
@@ -234,6 +227,14 @@ export default function AuthSessionSync() {
       cleanAuthCallbackUrl();
 
       if (session?.user) {
+        // Only run the finalization flow when there is actual pending auth
+        // work (OAuth callback or pending terms). If the user is simply
+        // already logged in and loading a page, skip the overlay entirely.
+        if (!hasPendingAuthWork) {
+          stopAuthenticating();
+          return;
+        }
+
         await finalizeSession(
           session.user.id,
           session.user.email,
@@ -242,9 +243,11 @@ export default function AuthSessionSync() {
       } else if (hasPendingAuthWork) {
         clearPendingSessionFallbackTimer();
         pendingSessionFallbackTimer.current = setTimeout(() => {
+          // Clear the stale pending key before hiding so it cannot
+          // retrigger the boot loader on the next page visit.
+          clearPendingTermsAcceptance();
           if (isMounted) {
             hideAuthBootLoader();
-            setIsAuthenticating(false);
           }
           pendingSessionFallbackTimer.current = null;
         }, 10_000);
@@ -261,9 +264,16 @@ export default function AuthSessionSync() {
       cleanAuthCallbackUrl();
 
       if (!session?.user) {
-        if (!hasPendingTermsAcceptanceSignal()) {
-          stopAuthenticating();
-        }
+        // No active session — always stop and clean up.
+        stopAuthenticating();
+        return;
+      }
+
+      // Supabase fires INITIAL_SESSION automatically for every already-
+      // logged-in user on every page load. Only process the session when
+      // there is real pending auth work to avoid showing the overlay on
+      // normal navigations.
+      if (!hasAuthCallbackSignal() && !hasPendingTermsAcceptanceSignal()) {
         return;
       }
 
@@ -281,10 +291,5 @@ export default function AuthSessionSync() {
     };
   }, []);
 
-  return isAuthenticating ? (
-    <AuthOnboardingStage
-      title="Signing you in"
-      description="We are confirming your secure session and loading your saved NextNews preferences."
-    />
-  ) : null;
+  return null;
 }

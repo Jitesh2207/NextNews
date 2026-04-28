@@ -76,6 +76,12 @@ function RegionFlag({
     africa: "ZA",
     "latin-america": "BR",
     india: "IN",
+    china: "CN",
+    russia: "RU",
+    japan: "JP",
+    "east-asia": "KR",
+    oceania: "AU",
+    "southeast-asia": "SG",
   };
 
   const code = countryCodeMap[id] || "UN";
