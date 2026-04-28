@@ -128,10 +128,7 @@ export default function PlansPage() {
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [freePlanExpiry, setFreePlanExpiry] = useState<number | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("nextnews-plan");
-  });
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

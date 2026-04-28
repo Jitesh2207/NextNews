@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "../../../../../lib/superbaseClient";
 import {
   hasAcceptedTerms,
   upsertTermsPolicyAcceptance,
 } from "@/lib/termsPolicy";
 import { persistClientSession } from "@/lib/clientAuth";
-import AuthOnboardingStage from "./authOnboardingStage";
 
 type PendingTermsAcceptance = {
   mode: "email-signup" | "google-signup";
@@ -105,7 +104,6 @@ export default function AuthSessionSync() {
   const pendingSessionFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -122,9 +120,6 @@ export default function AuthSessionSync() {
       // never re-triggers the boot loader on the next page load.
       clearPendingTermsAcceptance();
       hideAuthBootLoader();
-      if (isMounted) {
-        setIsAuthenticating(false);
-      }
     };
 
     const finalizeSession = async (
@@ -150,10 +145,6 @@ export default function AuthSessionSync() {
           pendingTerms.email === normalizedEmail);
 
       try {
-        if (isMounted) {
-          setIsAuthenticating(true);
-        }
-
         let acceptedTerms = await hasAcceptedTerms(userId);
 
         if (!acceptedTerms && canCreateTermsRecord) {
@@ -190,7 +181,6 @@ export default function AuthSessionSync() {
 
       if (hasPendingAuthWork && isMounted) {
         showAuthBootLoader();
-        setIsAuthenticating(true);
       }
 
       const authCallbackCode = getAuthCallbackCode();
@@ -258,7 +248,6 @@ export default function AuthSessionSync() {
           clearPendingTermsAcceptance();
           if (isMounted) {
             hideAuthBootLoader();
-            setIsAuthenticating(false);
           }
           pendingSessionFallbackTimer.current = null;
         }, 10_000);
@@ -302,10 +291,5 @@ export default function AuthSessionSync() {
     };
   }, []);
 
-  return isAuthenticating ? (
-    <AuthOnboardingStage
-      title="Signing you in"
-      description="We are confirming your secure session and loading your saved NextNews preferences."
-    />
-  ) : null;
+  return null;
 }

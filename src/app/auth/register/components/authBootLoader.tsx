@@ -1,45 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import LottiePlayer from "@/app/components/LottiePlayer";
 
 /**
  * AuthBootLoader
  *
- * Renders the full-screen authentication loading overlay ONLY while an
- * active auth flow is in progress. It watches the `auth-boot-loading`
- * class on <html> (toggled by the inline boot-script in layout.tsx and
- * by AuthSessionSync) and mounts its content — including the Lottie
- * animation — only when that class is present.
+ * Renders the full-screen authentication loading overlay shell on every page,
+ * while the `auth-boot-loading` class on <html> controls whether it is visible.
  *
- * When no auth flow is running the component returns null, so it adds
- * zero overhead to regular page loads.
+ * Keeping the markup present from the first paint lets the inline boot script
+ * in layout.tsx show the loader immediately on OAuth callback URLs, before
+ * React hydration finishes.
  */
 export default function AuthBootLoader() {
-  const [isAuthBooting, setIsAuthBooting] = useState(false);
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    const checkClass = () =>
-      setIsAuthBooting(root.classList.contains("auth-boot-loading"));
-
-    // Sync with whatever the inline boot-script already set before React
-    // hydrated.
-    checkClass();
-
-    // Watch for future class changes driven by AuthSessionSync.
-    const observer = new MutationObserver(checkClass);
-    observer.observe(root, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  if (!isAuthBooting) return null;
-
   return (
     <div
       id="auth-boot-loader"
@@ -58,11 +31,11 @@ export default function AuthBootLoader() {
         <h1>Signing you in</h1>
         <p>
           Please stay with us while we finish authentication and prepare your
-          workspace.
+          Nextspace.
         </p>
         <div className="auth-boot-progress">
-          <span />
-          <span />
+          <span aria-hidden="true">&nbsp;</span>
+          <span aria-hidden="true">&nbsp;</span>
         </div>
       </section>
     </div>
