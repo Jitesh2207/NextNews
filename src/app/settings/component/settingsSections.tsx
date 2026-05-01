@@ -201,9 +201,8 @@ export function SettingsCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       whileHover={{ y: -2 }}
-      className={`relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-800/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:border-slate-300/80 hover:shadow-md dark:hover:border-slate-600/80 sm:p-6 ${
-        className ?? ""
-      }`}
+      className={`relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/60 dark:bg-slate-800/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:border-slate-300/80 hover:shadow-md dark:hover:border-slate-600/80 sm:p-6 ${className ?? ""
+        }`}
     >
       <div className="mb-4 relative z-10 flex items-center gap-3">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100/80 shadow-inner dark:bg-slate-700/80">
@@ -257,14 +256,12 @@ export function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
-        }`}
+        className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-[var(--primary)]" : "bg-slate-300 dark:bg-slate-600"
+          }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
-            checked ? "left-6" : "left-1"
-          }`}
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${checked ? "left-6" : "left-1"
+            }`}
         />
       </button>
     </div>
@@ -647,16 +644,18 @@ export function BillingSettingsCard({
       }
 
       if (!isMounted) return;
-      setPlanDetails({ 
-        name: activePlanName, 
+      setPlanDetails({
+        name: activePlanName,
         purchaseDate: new Date(activePlanDate),
-        expiryDate: activePlanExpiry 
+        expiryDate: activePlanExpiry
       });
 
       const analytics = await readActivityAnalytics();
       const usedCalls =
         analytics.aiSummaryCount +
         analytics.personalizationSuggestionCount +
+        analytics.regionSuggestionCount +
+        analytics.articleReadCount +
         analytics.events.length;
 
       if (!isMounted) return;
@@ -699,10 +698,10 @@ export function BillingSettingsCard({
 
   const formattedExpiry = planDetails.expiryDate
     ? planDetails.expiryDate.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "Unknown";
   const formattedPurchase = planDetails.purchaseDate.toLocaleDateString(
     undefined,

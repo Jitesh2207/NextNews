@@ -57,8 +57,13 @@ export async function POST(req: NextRequest) {
         }
 
         const returnUrl =
-            process.env.DODO_PAYMENT_RETURN_URL?.trim() ||
-            new URL(`/plans?plan=${encodeURIComponent(plan)}`, req.url).toString();
+            process.env.DODO_PAYMENT_RETURN_URL?.trim()
+                ? `${process.env.DODO_PAYMENT_RETURN_URL.trim()}?plan=${encodeURIComponent(plan)}`
+                : new URL(`/checkout/success?plan=${encodeURIComponent(plan)}`, req.url).toString();
+
+        const failureUrl =
+            process.env.DODO_PAYMENT_FAILURE_URL?.trim() ||
+            new URL("/checkout/failure", req.url).toString();
 
         const session = await dodo.checkoutSessions.create({
             product_cart: [{ product_id: productId, quantity: 1 }],
@@ -69,6 +74,7 @@ export async function POST(req: NextRequest) {
                 }
                 : undefined,
             return_url: returnUrl,
+            cancel_url: failureUrl,
             feature_flags: {
                 allow_customer_editing_email: true,
                 allow_customer_editing_name: true,

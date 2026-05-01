@@ -60,7 +60,7 @@ export default function ChoosePlan({
       if (onError) {
         onError(message);
       } else {
-        alert(message);
+        window.location.assign("/checkout/failure");
       }
     } finally {
       setLoading(false);
