@@ -1,13 +1,14 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { XCircle } from "lucide-react";
 
-export default function CheckoutFailurePage() {
+function CheckoutFailureContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const plan = searchParams.get("plan");
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
@@ -15,9 +16,7 @@ export default function CheckoutFailurePage() {
       router.push("/plans");
       return;
     }
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
+    const timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown, router]);
 
@@ -39,7 +38,7 @@ export default function CheckoutFailurePage() {
         </p>
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => router.push(plan ? `/plans?plan=${plan}` : "/plans")}
+            onClick={() => router.push("/plans")}
             className="w-full rounded-xl bg-rose-600 text-white py-3 font-semibold hover:bg-rose-700 transition-colors"
           >
             Try Again
@@ -53,5 +52,19 @@ export default function CheckoutFailurePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutFailurePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-slate-500">Loading...</p>
+        </div>
+      }
+    >
+      <CheckoutFailureContent />
+    </Suspense>
   );
 }
