@@ -134,7 +134,7 @@ export function PlanSettingsCard() {
       } else {
         const savedPlan = localStorage.getItem("nextnews-plan");
         if (savedPlan) {
-          setPlanState({ name: savedPlan, status: "active" });
+          setPlanState({ name: savedPlan, status: "pending" });
         }
       }
     };
@@ -183,10 +183,12 @@ export function PlanSettingsCard() {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Your selected subscription is{" "}
             <span className="font-medium">{planState.name} Plan</span>{" "}
-            {planState.status === "canceled" ? (
+            {planState.status === "active" ? (
+              "currently active"
+            ) : planState.status === "canceled" ? (
               <span className="text-orange-600 dark:text-orange-400 font-semibold">(Canceled)</span>
             ) : (
-              "currently active"
+              <span className="text-slate-600 dark:text-slate-400 font-semibold">(Awaiting confirmation)</span>
             )}{" "}
             on this account.
           </p>
@@ -203,11 +205,11 @@ export function PlanSettingsCard() {
 }
 
 export function UsageLimitCard() {
-  const { totalAIUsage, limit, isActive, isLocked, loading } = useAILimit();
+  const { totalAIUsage, limit, isActive, isLocked, loading, isUnlimited } = useAILimit();
   
   const percentage = Math.min(100, Math.round((totalAIUsage / limit) * 100));
 
-  if (loading || percentage < 80) return null;
+  if (loading || isUnlimited || percentage < 80) return null;
 
   return (
     <motion.div

@@ -10,6 +10,8 @@ export function useAILimit() {
   const [hasPaidPlan, setHasPaidPlan] = useState(false);
   const [totalAIUsage, setTotalAIUsage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isUnlimited, setIsUnlimited] = useState(false);
+  const [planLimit, setPlanLimit] = useState(0);
 
   const refreshUsageState = useCallback(async () => {
     const [activity, planResult] = await Promise.all([
@@ -18,10 +20,10 @@ export function useAILimit() {
     ]);
 
     const plan = planResult?.data;
-    const isExemptFromFreeLimit = 
-      Boolean(plan?.status === "active") || 
-      Boolean(plan?.plan_credit_amount && plan.plan_credit_amount > 0);
-    const isUnlimited = Boolean(plan?.plan_credit_is_unlimited);
+    const isExemptFromFreeLimit = Boolean(plan?.status === "active");
+    const isUnlimitedPlan =
+      (Boolean(plan?.status === "active") && Boolean(plan?.plan_credit_is_unlimited)) ||
+      (Boolean(plan?.status === "active") && plan?.plan_credit_amount === 0);
 
     // 1. Standard Count for Non-Plan users (Total AI uses)
     const totalAIUsageCount =
@@ -44,7 +46,7 @@ export function useAILimit() {
 
     let isLocked = false;
     if (isExemptFromFreeLimit) {
-      if (!isUnlimited) {
+      if (!isUnlimitedPlan) {
         const planCredits = plan?.plan_credit_amount || 0;
         isLocked = weightedCreditUsage >= planCredits;
       }
@@ -56,7 +58,8 @@ export function useAILimit() {
       total: isExemptFromFreeLimit ? weightedCreditUsage : totalAIUsageCount, 
       isExempt: isExemptFromFreeLimit,
       isLocked,
-      planCredits: plan?.plan_credit_amount || 0
+      planCredits: plan?.plan_credit_amount || 0,
+      isUnlimited: isUnlimitedPlan
     };
   }, []);
 
@@ -69,9 +72,8 @@ export function useAILimit() {
         if (!mounted) return;
         setTotalAIUsage(next.total);
         setHasPaidPlan(next.isExempt);
-        // We can expose isLocked directly if we want, but currently useAILimit 
-        // calculates it at line 78 based on state. 
-        // Let's update the state to reflect the new locking logic.
+        setIsUnlimited(next.isUnlimited);
+        setPlanLimit(next.planCredits);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -110,24 +112,11 @@ export function useAILimit() {
     };
   }, [refreshUsageState]);
 
-  const [planLimit, setPlanLimit] = useState(0);
-
-  // Re-sync plan limit when usage state is refreshed
-  useEffect(() => {
-    let mounted = true;
-    const syncLimit = async () => {
-      const next = await refreshUsageState();
-      if (mounted) setPlanLimit(next.planCredits);
-    };
-    void syncLimit();
-    return () => { mounted = false; };
-  }, [refreshUsageState]);
-
   // Unified locking logic:
   // If user has plan: lock if weighted usage >= plan credits
   // If user has no plan: lock if unweighted count >= AI_FREE_LIMIT
   const isLocked = hasPaidPlan 
-    ? (planLimit > 0 && totalAIUsage >= planLimit)
+    ? (!isUnlimited && planLimit > 0 && totalAIUsage >= planLimit)
     : (totalAIUsage >= AI_FREE_LIMIT);
 
   return {
@@ -136,5 +125,6 @@ export function useAILimit() {
     limit: hasPaidPlan ? planLimit : AI_FREE_LIMIT,
     loading,
     isActive: hasPaidPlan,
+    isUnlimited,
   };
 }

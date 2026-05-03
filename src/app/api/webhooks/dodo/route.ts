@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    if (eventType === "subscription.active" || eventType === "payment.succeeded") {
+    // Grant access ONLY on subscription.active
+    if (eventType === "subscription.active") {
       const productId = data?.product_id ?? data?.product_cart?.[0]?.product_id;
       const customerEmail = data?.customer?.email || data?.customer_email;
       const subscriptionId = data?.subscription_id ?? data?.id ?? null;
@@ -122,22 +123,55 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Keep DB in sync for negative or lifecycle events
     if (eventType === "subscription.cancelled" || eventType === "subscription.failed") {
       const customerEmail = data?.customer?.email || data?.customer_email;
       if (customerEmail) {
+        const newStatus = eventType === "subscription.cancelled" ? "canceled" : "failed";
         await supabase
           .from("user_subscription_plans")
           .update({
-            status: "canceled",
-            canceled_at: new Date().toISOString(),
+            status: newStatus,
+            canceled_at: newStatus === "canceled" ? new Date().toISOString() : null,
             cancel_at_period_end: false,
           })
           .eq("user_email", customerEmail);
       }
     }
 
+    if (eventType === "subscription.on_hold") {
+      const customerEmail = data?.customer?.email || data?.customer_email;
+      if (customerEmail) {
+        await supabase
+          .from("user_subscription_plans")
+          .update({
+            status: "on_hold",
+          })
+          .eq("user_email", customerEmail);
+      }
+    }
+
+    if (eventType === "subscription.expired") {
+      const customerEmail = data?.customer?.email || data?.customer_email;
+      if (customerEmail) {
+        await supabase
+          .from("user_subscription_plans")
+          .update({
+            status: "expired",
+            current_period_end: new Date().toISOString(),
+          })
+          .eq("user_email", customerEmail);
+      }
+    }
+
+    // Do NOT grant access on payment.succeeded — only record if needed.
+    if (eventType === "payment.succeeded") {
+      console.log("Payment succeeded — awaiting subscription.active to grant access.");
+    }
+
     if (eventType === "payment.failed") {
       console.error("Payment failed event received:", data);
+      // Intentionally no DB grant here. Access is allowed only on subscription.active.
     }
 
     return NextResponse.json({ received: true });
