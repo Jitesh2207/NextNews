@@ -203,11 +203,11 @@ export function PlanSettingsCard() {
 }
 
 export function UsageLimitCard() {
-  const { totalAIUsage, limit, isActive, isLocked, loading } = useAILimit();
+  const { totalAIUsage, limit, isActive, isLocked, loading, isUnlimited } = useAILimit();
   
   const percentage = Math.min(100, Math.round((totalAIUsage / limit) * 100));
 
-  if (loading || percentage < 80) return null;
+  if (loading || isUnlimited || percentage < 80) return null;
 
   return (
     <motion.div
