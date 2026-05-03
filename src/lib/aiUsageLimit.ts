@@ -74,8 +74,8 @@ export async function evaluateAiUsageAccess(
   ]);
 
   const plan = planData ?? null;
-  const isExemptFromFreeLimit = Boolean(plan?.status === "active") || (toCount(plan?.plan_credit_amount) > 0);
-  const isUnlimited = Boolean(plan?.plan_credit_is_unlimited);
+  const isExemptFromFreeLimit = Boolean(plan?.status === "active");
+  const isUnlimited = Boolean(plan?.status === "active" && plan?.plan_credit_is_unlimited);
 
   const activity = (activityData?.activity_data ?? {}) as ActivityData;
   

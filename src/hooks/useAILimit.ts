@@ -20,11 +20,9 @@ export function useAILimit() {
     ]);
 
     const plan = planResult?.data;
-    const isExemptFromFreeLimit = 
-      Boolean(plan?.status === "active") || 
-      Boolean(plan?.plan_credit_amount && plan.plan_credit_amount > 0);
-    const isUnlimitedPlan = 
-      Boolean(plan?.plan_credit_is_unlimited) || 
+    const isExemptFromFreeLimit = Boolean(plan?.status === "active");
+    const isUnlimitedPlan =
+      (Boolean(plan?.status === "active") && Boolean(plan?.plan_credit_is_unlimited)) ||
       (Boolean(plan?.status === "active") && plan?.plan_credit_amount === 0);
 
     // 1. Standard Count for Non-Plan users (Total AI uses)
