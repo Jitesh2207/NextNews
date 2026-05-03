@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { DodoPayments } from "dodopayments";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    return null;
+  }
+  return createClient(url, serviceKey);
+}
 
 const PLAN_KEY_MAP: Record<string, string> = {
   [process.env.DODO_PAYMENT_NEXTNEWS_PRO_MONTHLY_PRODUCT_ID?.trim() ?? ""]: "pro_monthly",
@@ -14,17 +19,19 @@ const PLAN_KEY_MAP: Record<string, string> = {
   [process.env.DODO_PAYMENT_NEXTNEWS_PRO_PLUS_YEARLY_PRODUCT_ID?.trim() ?? ""]: "proplus_yearly",
 };
 
-const WEBHOOK_KEY =
-  process.env.DODO_PAYMENT_WEBHOOK_KEY?.trim() ||
-  process.env.DODO_PAYMENTS_WEBHOOK_KEY?.trim() ||
-  "";
+function getDodoClient() {
+  const webhookKey =
+    process.env.DODO_PAYMENT_WEBHOOK_KEY?.trim() ||
+    process.env.DODO_PAYMENTS_WEBHOOK_KEY?.trim() ||
+    "";
 
-const dodo = new DodoPayments({
-  bearerToken: process.env.DODO_PAYMENT_API_KEY,
-  environment:
-    process.env.DODO_PAYMENT_ENVIRONMENT === "test_mode" ? "test_mode" : "live_mode",
-  webhookKey: WEBHOOK_KEY || undefined,
-});
+  return new DodoPayments({
+    bearerToken: process.env.DODO_PAYMENT_API_KEY,
+    environment:
+      process.env.DODO_PAYMENT_ENVIRONMENT === "test_mode" ? "test_mode" : "live_mode",
+    webhookKey: webhookKey || undefined,
+  });
+}
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -34,7 +41,10 @@ export async function POST(req: NextRequest) {
     "webhook-timestamp": req.headers.get("webhook-timestamp") ?? "",
   };
 
-  if (!WEBHOOK_KEY) {
+  const dodo = getDodoClient();
+  const webhookKey = dodo.webhookKey;
+
+  if (!webhookKey) {
     console.error("Missing DODO_PAYMENT_WEBHOOK_KEY/DODO_PAYMENTS_WEBHOOK_KEY");
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
@@ -50,7 +60,11 @@ export async function POST(req: NextRequest) {
   const eventType = payload?.type as string;
   const data = payload?.data;
 
-  console.log("Dodo webhook received:", eventType);
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+  }
 
   try {
     if (eventType === "subscription.active" || eventType === "payment.succeeded") {
