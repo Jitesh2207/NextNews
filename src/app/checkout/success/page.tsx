@@ -2,11 +2,12 @@
 
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const plan = searchParams.get("plan");
@@ -14,25 +15,23 @@ export default function CheckoutSuccessPage() {
 
   useEffect(() => {
     if (countdown <= 0) {
-      if (plan) {
-        router.push(`/plans?plan=${plan}`);
-      } else {
-        router.push("/plans");
-      }
+      router.push(plan ? `/plans?plan=${plan}` : "/plans");
       return;
     }
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
+    const timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown, router, plan]);
 
   const planLabel =
-    plan === "pro_monthly" ? "Pro (Monthly)"
-    : plan === "pro_yearly" ? "Pro (Yearly)"
-    : plan === "proplus_monthly" ? "Pro+ (Monthly)"
-    : plan === "proplus_yearly" ? "Pro+ (Yearly)"
-    : "Premium";
+    plan === "pro_monthly"
+      ? "Pro (Monthly)"
+      : plan === "pro_yearly"
+        ? "Pro (Yearly)"
+        : plan === "proplus_monthly"
+          ? "Pro+ (Monthly)"
+          : plan === "proplus_yearly"
+            ? "Pro+ (Yearly)"
+            : "Premium";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-white dark:from-slate-950 dark:to-slate-900 px-4">
@@ -44,7 +43,8 @@ export default function CheckoutSuccessPage() {
           Payment Successful!
         </h1>
         <p className="text-slate-600 dark:text-slate-300 mb-4">
-          You're now on the <span className="font-semibold text-teal-600">{planLabel}</span> plan.
+          You're now on the{" "}
+          <span className="font-semibold text-teal-600">{planLabel}</span> plan.
           Welcome to NextNews premium!
         </p>
         <p className="text-sm text-slate-400 dark:text-slate-500 mb-8">
@@ -58,5 +58,19 @@ export default function CheckoutSuccessPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-slate-500">Loading...</p>
+        </div>
+      }
+    >
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
