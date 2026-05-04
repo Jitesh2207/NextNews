@@ -41,10 +41,10 @@ const planCatalog = [
     name: "Free",
     monthlyPrice: 0,
     yearlyPrice: 0,
-    desc: "A dependable everyday plan for casual readers, including a 7-day free trial.",
+    desc: "A dependable everyday plan for casual readers, including a 16-day free trial.",
     credits: {
-      monthly: "600 API call credits for 7 days",
-      yearly: "600 API call credits for 7 days",
+      monthly: "600 API call credits for 16 days",
+      yearly: "600 API call credits for 16 days",
     },
     features: [
       "Core news access and daily reading",
@@ -92,7 +92,7 @@ const planCatalog = [
 ];
 
 const FREE_PLAN_EXPIRY_KEY = "nextnews-plan-expiry";
-const FREE_PLAN_DAYS = 7;
+const FREE_PLAN_DAYS = 16;
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
 const productPerks = [
@@ -482,7 +482,7 @@ function PlansContent() {
                   {currentPlan === "Free"
                     ? planExpiryDate
                       ? `Free plan expires on ${planExpiryDate}.`
-                      : "Free plan expires 7 days after activation."
+                      : "Free plan expires 16 days after activation."
                     : planExpiryDate
                       ? `Your premium plan remains active until ${planExpiryDate}.`
                       : "Your premium plan remains active until it is canceled or its billing cycle ends."}

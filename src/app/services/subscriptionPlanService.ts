@@ -63,7 +63,7 @@ type PlanDefinition = {
     creditIsUnlimited: boolean;
 };
 
-const FREE_PLAN_ACCESS_DAYS = 7;
+const FREE_PLAN_ACCESS_DAYS = 16;
 const FREE_PLAN_COOLDOWN_DAYS = 30;
 
 const PLAN_DEFINITIONS: Record<PlanKey, PlanDefinition> = {
@@ -75,8 +75,8 @@ const PLAN_DEFINITIONS: Record<PlanKey, PlanDefinition> = {
         amountMinor: 0,
         currentPeriodEndDays: FREE_PLAN_ACCESS_DAYS,
         creditAmount: 600,
-        creditLabel: "600 API call credits for 7 days",
-        creditPeriod: "7_days",
+        creditLabel: "600 API call credits for 16 days",
+        creditPeriod: "16_days",
         creditIsUnlimited: false,
     },
     pro_monthly: {
