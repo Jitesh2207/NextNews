@@ -10,10 +10,10 @@ interface Article {
   source?: { id?: string | null; name?: string };
   author?: string | null;
   title?: string;
-  description?: string;
-  content?: string;
+  description?: string | null;
+  content?: string | null;
   url?: string;
-  urlToImage?: string;
+  urlToImage?: string | null;
   publishedAt?: string;
 }
 
@@ -163,7 +163,7 @@ export default function CategoryContent({
         params.set("country", "us");
       }
 
-      const response = await fetch(`/api/news?${params.toString()}`, {
+      const response = await fetch(`/api/category-news?${params.toString()}`, {
         cache: "no-store",
       });
 
@@ -283,6 +283,7 @@ export default function CategoryContent({
           region={regionId}
           country="us"
           pageSize={pageSize}
+          apiUrl="/api/category-news"
           emptyMessage="No articles found for this category."
         />
       )}
