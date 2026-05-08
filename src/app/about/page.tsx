@@ -20,10 +20,11 @@ import {
   Twitter,
   Instagram,
   Github,
-  LayoutGrid,
   Mail,
+  LayoutGrid,
   X,
   ExternalLink,
+  Handshake,
   ShieldCheck,
   Scale,
 } from "lucide-react";
@@ -880,13 +881,9 @@ export default function AboutPage() {
                 onClick={() => setIsWorkWithUsOpen(true)}
                 className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-slate-700/60 bg-slate-800/40 hover:border-blue-500/40 transition-colors"
               >
-                <Image
-                  src="/logo1.png"
-                  alt="NextNews"
-                  width={28}
-                  height={28}
-                  className="rounded-lg"
-                />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 text-blue-500 ring-1 ring-blue-500/20">
+                  <Handshake className="h-5 w-5" />
+                </div>
                 <div className="text-left">
                   <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">
                     Work With Us
@@ -937,8 +934,14 @@ export default function AboutPage() {
                 </div>
 
                 <div className="mt-1 flex flex-col items-center text-center sm:mt-0 sm:flex-row sm:items-center sm:gap-4 sm:text-left">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg bg-gradient-to-br from-blue-500 to-cyan-500 shadow-blue-500/20">
-                    <Mail className="h-7 w-7" />
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2.5 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    <Image
+                      src="/logo1.png"
+                      alt="NextNews Logo"
+                      width={58}
+                      height={58}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
                   <div className="mt-3 sm:mt-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-600 dark:text-blue-400">

@@ -4,6 +4,7 @@ import { MotionConfig } from "framer-motion";
 import { useEffect, useState } from "react";
 import Navbar from "./navbar";
 import Sidebar from "./sidebar";
+import MobileCategoryRow from "./mobileCategoryRow";
 import Template from "../template";
 import GoalCompletionBanner from "./GoalCompletionBanner";
 import AuthSessionSync from "../auth/register/components/authSessionSync";
@@ -109,6 +110,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onMenuToggle={() => setIsSidebarOpen((prev) => !prev)}
         isMobileOpen={isSidebarOpen}
       />
+      <MobileCategoryRow />
       <div className="flex min-h-[calc(100vh-65px)]">
         <Sidebar
           isMobileOpen={isSidebarOpen}

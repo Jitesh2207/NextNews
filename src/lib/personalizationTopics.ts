@@ -45,6 +45,7 @@ export const DEFAULT_PERSONALIZATION_TOPICS = [
   "Top Headlines",
   "Technology",
   "Business",
+  "Politics",
   "Entertainment",
   "Sports",
   "Health",
