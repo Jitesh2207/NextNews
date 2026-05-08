@@ -1,10 +1,12 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { Bot, Sparkles, X, ArrowUpRight, Clock, User, Share2 } from "lucide-react";
 import AddNoteButton from "./addNoteButton";
 import AISummaryButton from "./aiSummaryButton";
 import { getNewsImageSrc } from "@/lib/newsImage";
 import { trackActivityEvent } from "@/lib/activityAnalytics";
+import Link from "next/link";
+import { encodeArticleId } from "@/lib/articleUtils";
 
 interface Article {
   source: { id: string | null; name: string };
@@ -129,67 +131,72 @@ export default function ArticleCard({
 }: ArticleCardProps) {
   return (
     <article className="flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-visible group border border-gray-100">
-      <div className="relative h-52 w-full overflow-hidden bg-gray-200">
-        <img
-          src={getNewsImageSrc(article.urlToImage)}
-          alt={article.title || "News Article"}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = "/news1.jpg";
-          }}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <PriorityBadge
-          status={article.status}
-          publishedAt={article.publishedAt}
-          title={article.title}
-        />
-        <div className="absolute top-3 left-3">
-          <span className="inline-block bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
-            {article.source?.name || "Unknown Source"}
-          </span>
+      <Link 
+        href={`/article/${encodeArticleId(article.url)}`}
+        className="block flex-1 flex flex-col"
+        onClick={() => {
+          trackActivityEvent("article_open", {
+            source: article.source?.name ?? "",
+            category: category ?? "",
+            articleTitle: article.title,
+            articleUrl: article.url,
+            articlePublishedAt: article.publishedAt,
+          });
+        }}
+      >
+        <div className="relative h-52 w-full overflow-hidden bg-gray-200 rounded-t-2xl">
+          <img
+            src={getNewsImageSrc(article.urlToImage)}
+            alt={article.title || "News Article"}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "/news1.jpg";
+            }}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <PriorityBadge
+            status={article.status}
+            publishedAt={article.publishedAt}
+            title={article.title}
+          />
+          <div className="absolute top-3 left-3">
+            <span className="inline-block bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+              {article.source?.name || "Unknown Source"}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div
-          suppressHydrationWarning
-          className="mb-3 flex items-center text-xs text-gray-500 font-medium uppercase tracking-wider"
-        >
-          {formattedDate || "Date Not Available"}
+        <div className="flex flex-1 flex-col p-5">
+          <div
+            suppressHydrationWarning
+            className="mb-3 flex items-center text-xs text-gray-500 font-medium uppercase tracking-wider"
+          >
+            {formattedDate || "Date Not Available"}
+          </div>
+
+          <h2 className="mb-3 text-lg font-bold text-gray-900 leading-snug line-clamp-3 group-hover:text-blue-600 transition-colors">
+            {article.title || "No Title Available"}
+          </h2>
+          <p className="mb-4 text-sm text-gray-600 line-clamp-3 flex-1">
+            {article.description || "Click to read the full story."}
+          </p>
         </div>
+      </Link>
 
-        <h2 className="mb-3 text-lg font-bold text-gray-900 leading-snug line-clamp-3 group-hover:text-blue-600 transition-colors">
-          {article.title || "No Title Available"}
-        </h2>
-        <p className="mb-4 text-sm text-gray-600 line-clamp-3 flex-1">
-          {article.description || "Click to read the full story."}
-        </p>
-        <div className="mt-auto pt-4 border-t border-gray-50">
+      <div className="p-5 pt-0 mt-auto">
+        <div className="pt-4 border-t border-gray-50">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <a
-              href={article.url || "#"}
-              target={article.url ? "_blank" : "_self"}
-              rel={article.url ? "noopener noreferrer" : ""}
-              onClick={() => {
-                if (!article.url) return;
-                trackActivityEvent("article_open", {
-                  source: article.source?.name ?? "",
-                  category: category ?? "",
-                  articleTitle: article.title,
-                  articleUrl: article.url,
-                  articlePublishedAt: article.publishedAt,
-                });
-              }}
+            <Link
+              href={`/article/${encodeArticleId(article.url)}`}
               className={`inline-flex items-center text-sm font-semibold transition-colors shrink-0 ${
                 article.url
                   ? "text-blue-600 hover:text-blue-700 cursor-pointer"
                   : "text-gray-400 cursor-not-allowed"
               }`}
             >
-              {article.url ? "Read Full Story" : "Link Not Available"}
+              Read Full Story
               <ArrowUpRight className="w-4 h-4 ml-1" />
-            </a>
+            </Link>
 
             <div className="flex flex-nowrap items-center gap-2">
               <AISummaryButton

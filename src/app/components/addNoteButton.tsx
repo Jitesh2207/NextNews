@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useRef, useEffect } from "react";
 import { saveNote } from "../services/notesService";
 import { AnimatePresence, motion } from "framer-motion";
-import { Notebook, X } from "lucide-react";
+import { Notebook, Pencil, X } from "lucide-react";
 import { supabase } from "../../../lib/superbaseClient";
 import { getVerifiedAuthUser } from "@/lib/clientAuth";
 
@@ -13,6 +13,9 @@ interface AddNoteButtonProps {
   link: string;
   publishedAt?: string;
   sourceName?: string;
+  buttonLabel?: string;
+  buttonClassName?: string;
+  buttonIcon?: "notebook" | "pencil" | "none";
 }
 
 function toSlug(input: string) {
@@ -28,6 +31,9 @@ export default function AddNoteButton({
   link,
   publishedAt,
   sourceName,
+  buttonLabel,
+  buttonClassName,
+  buttonIcon,
 }: AddNoteButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
@@ -43,7 +49,10 @@ export default function AddNoteButton({
     const checkAuth = async () => {
       try {
         // Use cached local token — no Supabase call needed
-        if (localStorage.getItem("auth_token") || localStorage.getItem("auth_email")) {
+        if (
+          localStorage.getItem("auth_token") ||
+          localStorage.getItem("auth_email")
+        ) {
           if (isMounted) setIsAuthenticated(true);
           return;
         }
@@ -154,15 +163,30 @@ export default function AddNoteButton({
     exit: { opacity: 0, y: "100%" },
   };
 
+  const resolvedButtonClassName =
+    buttonClassName ??
+    "inline-flex whitespace-nowrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:text-blue-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:bg-slate-700";
+  const resolvedButtonLabel = buttonLabel ?? "Add Note";
+  const resolvedButtonIcon = buttonIcon ?? "notebook";
+  const buttonIconNode =
+    resolvedButtonIcon === "pencil" ? (
+      <Pencil
+        size={20}
+        className="group-hover:rotate-12 transition-transform"
+      />
+    ) : resolvedButtonIcon === "notebook" ? (
+      <Notebook size={16} className="text-blue-600 dark:text-blue-400" />
+    ) : null;
+
   return (
     <>
       <button
         type="button"
         onClick={handleOpen}
-        className="inline-flex whitespace-nowrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:text-blue-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:bg-slate-700"
+        className={resolvedButtonClassName}
       >
-        <Notebook size={16} className="text-blue-600 dark:text-blue-400" />
-        Add Note
+        {buttonIconNode}
+        {resolvedButtonLabel}
       </button>
 
       <AnimatePresence>
@@ -217,7 +241,10 @@ export default function AddNoteButton({
                         <span className="font-medium text-slate-500 dark:text-slate-400">
                           Date:
                         </span>
-                        <span suppressHydrationWarning className="mt-1 block text-slate-900 dark:text-slate-100">
+                        <span
+                          suppressHydrationWarning
+                          className="mt-1 block text-slate-900 dark:text-slate-100"
+                        >
                           {formattedDate}
                         </span>
                       </p>
