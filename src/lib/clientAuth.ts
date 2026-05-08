@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/superbaseClient";
 import {
   DEFAULT_APPEARANCE_SETTINGS,
@@ -10,6 +11,11 @@ import { applyDarkMode, removeStoredAccountSettings } from "@/lib/accountSetting
 
 const UUID_TEMPLATE = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
 const AUTH_STORAGE_KEYS = ["auth_email", "auth_token", "userEmail"] as const;
+let verifiedAuthUserPromise: Promise<{
+  user: User | null;
+  error: unknown;
+}> | null = null;
+let hasLoggedExpectedAuthTimeout = false;
 
 function getCryptoObject(): Crypto | null {
   if (typeof globalThis === "undefined" || !("crypto" in globalThis)) return null;
@@ -76,27 +82,37 @@ export function clearClientSession(email?: string | null) {
   applyAppearanceSettings(DEFAULT_APPEARANCE_SETTINGS);
 }
 
-export async function getVerifiedAuthUser() {
+function logExpectedAuthTimeoutOnce() {
+  if (hasLoggedExpectedAuthTimeout) return;
+  hasLoggedExpectedAuthTimeout = true;
+  console.warn(
+    "Supabase auth operation timed out. Requests are now deduplicated to reduce auth lock contention.",
+  );
+}
+
+async function loadVerifiedAuthUser() {
   try {
-    const { data, error } = await supabase.auth.getUser();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    if (error || !data.user) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        await supabase.auth.signOut().catch(() => { });
-      }
-
-      if (typeof window !== "undefined") {
-        clearClientSession(session?.user?.email);
-      }
-
-      return { user: null, error: error ?? new Error("Not logged in") };
+    if (sessionError) {
+      throw sessionError;
     }
 
-    return { user: data.user, error: null };
+    if (session?.user) {
+      if (typeof window !== "undefined") {
+        persistClientSession(session.user.email ?? "", session.access_token ?? "");
+      }
+      return { user: session.user, error: null };
+    }
+
+    if (typeof window !== "undefined") {
+      clearClientSession();
+    }
+
+    return { user: null, error: new Error("Not logged in") };
   } catch (err: unknown) {
     const errorName =
       err instanceof Error
@@ -106,10 +122,20 @@ export async function getVerifiedAuthUser() {
           : "";
 
     if (errorName === "AbortError") {
-      console.warn("Supabase auth operation timed out (expected behavior).");
+      logExpectedAuthTimeoutOnce();
     } else {
       console.error("An unexpected error occurred during auth:", err);
     }
     return { user: null, error: err };
   }
+}
+
+export async function getVerifiedAuthUser() {
+  if (!verifiedAuthUserPromise) {
+    verifiedAuthUserPromise = loadVerifiedAuthUser().finally(() => {
+      verifiedAuthUserPromise = null;
+    });
+  }
+
+  return verifiedAuthUserPromise;
 }
