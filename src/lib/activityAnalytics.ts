@@ -31,6 +31,8 @@ export type ActivityAnalytics = {
   regionSuggestionCount: number;
   totalEngagement: number;
   events: ActivityEvent[];
+  freeCooldownCycle?: number;
+  freeCooldownEnd?: string | null;
 };
 
 export type GoalTrackerState = {
@@ -58,7 +60,35 @@ const DEFAULT_ACTIVITY_ANALYTICS: ActivityAnalytics = {
   regionSuggestionCount: 0,
   totalEngagement: 0,
   events: [],
+  freeCooldownCycle: 0,
+  freeCooldownEnd: null,
 };
+
+export const FREE_PLAN_COOLDOWN_DAYS = 12;
+export const MAX_FREE_CAP = 100;
+
+export function calculateFreeLimit(cycle: number): number {
+  if (cycle <= 0) return 20;
+  if (cycle === 1) return 40;
+  if (cycle === 2) return 60;
+  if (cycle === 3) return 80;
+  const nextLimit = 80 + (cycle - 3) * 40;
+  return Math.min(nextLimit, MAX_FREE_CAP);
+}
+
+export function calculateWeightedUsage(activity: ActivityAnalytics): number {
+  const aiWeighted =
+    (activity.aiSummaryCount || 0) * 1 +
+    (activity.personalizationSuggestionCount || 0) * 2 +
+    (activity.regionSuggestionCount || 0) * 2;
+
+  const otherUsage = activity.articleReadCount || 0;
+  const otherEventsCount = (activity.events || [])
+    .filter(e => !["ai_summary", "personalization_suggestion", "region_suggestion", "article_open"].includes(e.type))
+    .length;
+
+  return aiWeighted + otherUsage + otherEventsCount;
+}
 
 export const DEFAULT_GOAL_TRACKER_STATE: GoalTrackerState = {
   weeklyGoal: 5,
@@ -266,6 +296,8 @@ const normalizeActivityAnalytics = (value: unknown): ActivityAnalytics => {
       computedEngagement,
     ),
     events,
+    freeCooldownCycle: coerceNumber(record.freeCooldownCycle, 0),
+    freeCooldownEnd: typeof record.freeCooldownEnd === "string" ? record.freeCooldownEnd : null,
   };
 };
 
@@ -574,7 +606,30 @@ export async function trackActivityEvent(
           : current.regionSuggestionCount,
       totalEngagement: current.totalEngagement + eventScore,
       events: [...current.events, nextEvent].slice(-MAX_EVENT_HISTORY),
+      freeCooldownCycle: current.freeCooldownCycle || 0,
+      freeCooldownEnd: current.freeCooldownEnd || null,
     };
+
+    // Manage cooldown and cycle progression
+    const weightedUsage = calculateWeightedUsage(nextAnalytics);
+    let cycle = nextAnalytics.freeCooldownCycle || 0;
+    let cooldownEnd = nextAnalytics.freeCooldownEnd;
+
+    if (cooldownEnd) {
+      if (Date.now() >= new Date(cooldownEnd).getTime()) {
+        // Cooldown passed
+        cycle += 1;
+        cooldownEnd = null;
+        nextAnalytics.freeCooldownCycle = cycle;
+        nextAnalytics.freeCooldownEnd = cooldownEnd;
+      }
+    }
+
+    const currentLimit = calculateFreeLimit(cycle);
+    if (weightedUsage >= currentLimit && !cooldownEnd && weightedUsage < MAX_FREE_CAP) {
+      // Just hit limit or limit reached after cooldown
+      nextAnalytics.freeCooldownEnd = new Date(Date.now() + FREE_PLAN_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    }
 
     await saveActivityAnalytics(nextAnalytics);
     void syncGoalTrackerProgress();

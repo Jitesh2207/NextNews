@@ -19,7 +19,11 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { readActivityAnalytics } from "@/lib/activityAnalytics";
+import {
+  calculateFreeLimit,
+  calculateWeightedUsage,
+  readActivityAnalytics,
+} from "@/lib/activityAnalytics";
 import LottiePlayer from "@/app/components/LottiePlayer";
 import { loadUserSubscriptionPlan } from "@/app/services/subscriptionPlanService";
 import { useAILimit } from "@/hooks/useAILimit";
@@ -805,12 +809,17 @@ export function BillingSettingsCard({
       let isUnlimited = false;
 
       const { data } = await loadUserSubscriptionPlan();
+      const analytics = await readActivityAnalytics();
+      const usedCalls = calculateWeightedUsage(analytics);
+
       if (data && data.status === "active") {
         activePlanName = data.plan_name;
         planTotal = data.plan_credit_amount || 600;
         activePlanDate = data.current_period_start || new Date().toISOString();
         if (data.plan_key === "free") {
           activePlanExpiry = data.trial_end ? new Date(data.trial_end) : null;
+          // For free plan, use the stepped limit logic
+          planTotal = calculateFreeLimit(analytics.freeCooldownCycle || 0);
         } else {
           activePlanExpiry = data.current_period_end
             ? new Date(data.current_period_end)
@@ -822,11 +831,10 @@ export function BillingSettingsCard({
         if (activePlanName === "Pro+") planTotal = 45000;
         const cachedExpiry = localStorage.getItem("nextnews-plan-expiry");
         if (cachedExpiry) activePlanExpiry = new Date(cachedExpiry);
-      }
-
-      if (!activePlanName) {
-        if (isMounted) setPlanDetails(null);
-        return;
+      } else {
+        // Fallback for completely free users without a plan row
+        activePlanName = "Free";
+        planTotal = calculateFreeLimit(analytics.freeCooldownCycle || 0);
       }
 
       if (!isMounted) return;
@@ -837,28 +845,6 @@ export function BillingSettingsCard({
         status: data?.status || "active",
       });
 
-      const analytics = await readActivityAnalytics();
-      // Weighting: Summaries = 1, Suggestions = 2, Others = 1
-      // Avoid double-counting events that are already covered by dedicated counters
-      const aiWeightedUsage =
-        analytics.aiSummaryCount * 1 +
-        analytics.personalizationSuggestionCount * 2 +
-        analytics.regionSuggestionCount * 2;
-
-      const otherUsage = analytics.articleReadCount;
-      const otherEventsCount = analytics.events.filter(
-        (e) =>
-          ![
-            "ai_summary",
-            "personalization_suggestion",
-            "region_suggestion",
-            "article_open",
-          ].includes(e.type),
-      ).length;
-
-      const usedCalls = aiWeightedUsage + otherUsage + otherEventsCount;
-
-      if (!isMounted) return;
       setApiUsage({
         used: usedCalls,
         total: planTotal,

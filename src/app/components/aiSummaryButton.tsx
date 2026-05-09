@@ -67,7 +67,7 @@ export default function AISummaryButton({
   const anchorRef = useRef<HTMLDivElement | null>(null);
   const promoRef = useRef<HTMLDivElement | null>(null);
   const summaryPoints = toBulletPoints(summary);
-  const { isLocked, limit } = useAILimit();
+  const { isLocked, limit, isFreePlanCooldown, nextAvailableAt, isActive } = useAILimit();
   const shouldShowPlansCTA =
     isLocked || error.toLowerCase().includes("free limit");
 
@@ -195,7 +195,19 @@ export default function AISummaryButton({
     setError("");
 
     if (isLocked) {
-      setError(`You've reached your free limit of ${limit} AI usages. Activate any plan to unlock.`);
+      if (isActive) {
+        setError(`You've reached your plan limit of ${limit} usages. Upgrade your plan to continue.`);
+      } else if (isFreePlanCooldown && nextAvailableAt) {
+        const date = new Date(nextAvailableAt).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        setError(`You've reached your current free limit of ${limit} usages. It will be accessible again on ${date} (after 12 days cooldown).`);
+      } else {
+        // Hard lock at 100
+        setError(`You've reached the total free limit of ${limit} AI usages. Activate a plan to unlock permanently.`);
+      }
       return;
     }
 

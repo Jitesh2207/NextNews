@@ -87,7 +87,9 @@ export default function CreditAlertBanner({
           <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg tracking-tight">
             {isFreePlanCooldown && countdown
               ? "Limited Access - Cooldown Active"
-              : "Credit Limit Reached"}
+              : !isPlan && limit >= 100
+                ? "Total Free Limit Reached"
+                : "Credit Limit Reached"}
           </h4>
           <div className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
             {isFreePlanCooldown && countdown ? (
@@ -111,7 +113,7 @@ export default function CreditAlertBanner({
             ) : (
               <div className="flex flex-col items-center gap-1">
                 <span>
-                  You reached your {isPlan ? "plan" : "free"} credit limit of{" "}
+                  You reached your {isPlan ? "plan" : !isPlan && limit >= 100 ? "total free" : "free"} credit limit of{" "}
                   <span className="font-bold text-amber-600 dark:text-amber-400">
                     {limit.toLocaleString()}
                   </span>
@@ -119,7 +121,9 @@ export default function CreditAlertBanner({
                 <span className="opacity-80">
                   {isPlan
                     ? "Upgrade or top up to continue using AI features."
-                    : "Upgrade your plan to unlock more AI insights."}
+                    : !isPlan && limit >= 100
+                      ? "Activate a plan to unlock AI features permanently."
+                      : "Upgrade your plan to unlock more AI insights."}
                 </span>
               </div>
             )}
