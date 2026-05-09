@@ -54,6 +54,7 @@ import {
   persistClientSession,
 } from "@/lib/clientAuth";
 import {
+  DEFAULT_PERSONALIZATION_TOPICS,
   sanitizePersonalizationTopic,
   slugifyPersonalizationTopic,
 } from "@/lib/personalizationTopics";
@@ -348,15 +349,9 @@ function getDynamicTopicIcon(topic: string): IconName {
   return "newspaper";
 }
 
-const DEFAULT_TOPIC_SELECTION = [
-  "top headlines",
-  "technology",
-  "business",
-  "entertainment",
-  "sports",
-  "health",
-  "science",
-];
+const DEFAULT_TOPIC_SELECTION = DEFAULT_PERSONALIZATION_TOPICS.map((topic) =>
+  topic.toLowerCase(),
+);
 
 const SIDEBAR_SEARCH_EVENT = "sidebar-search";
 
@@ -375,57 +370,39 @@ export default function Sidebar({
   const router = useRouter();
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadPersonalization = async () => {
+      if (!isMounted) return;
       setIsPersonalizationLoaded(false);
       try {
         const { data } = await getUserPersonalization();
+        if (!isMounted) return;
         setSelectedTopics(
           Array.isArray(data?.favorite_topics) ? data.favorite_topics : [],
         );
       } catch {
+        if (!isMounted) return;
         setSelectedTopics([]);
       } finally {
-        setIsPersonalizationLoaded(true);
+        if (isMounted) {
+          setIsPersonalizationLoaded(true);
+        }
       }
     };
 
     getVerifiedAuthUser()
-      .then(async ({ user }) => {
+      .then(({ user }) => {
+        if (!isMounted) return;
         if (user) {
-          try {
-            const {
-              data: { session },
-            } = await supabase.auth.getSession();
-            setIsAuthenticated(true);
-            setUserEmail(user.email ?? "");
-            persistClientSession(user.email ?? "", session?.access_token ?? "");
-            void loadPersonalization();
-          } catch (err: unknown) {
-            const errorName =
-              err instanceof Error
-                ? err.name
-                : typeof err === "object" &&
-                    err !== null &&
-                    "name" in err &&
-                    typeof (err as { name?: unknown }).name === "string"
-                  ? (err as { name: string }).name
-                  : "";
-            if (errorName === "AbortError") {
-              console.warn(
-                "Sidebar auth operation timed out (expected behavior).",
-              );
-            }
-          }
+          setIsAuthenticated(true);
+          setUserEmail(user.email ?? "");
+          void loadPersonalization();
         } else {
           setIsAuthenticated(false);
           setUserEmail("");
           setSelectedTopics([]);
           setIsPersonalizationLoaded(true);
-        }
-      })
-      .catch((err) => {
-        if (err?.name === "AbortError") {
-          console.warn("Sidebar auth operation timed out (expected behavior).");
         }
       });
 
@@ -457,6 +434,7 @@ export default function Sidebar({
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
       window.removeEventListener(
         PERSONALIZATION_UPDATED_EVENT,
@@ -812,9 +790,10 @@ function SidebarContent({
                 bounce: 0.4,
                 duration: 0.4,
               }}
-              className="text-3xl font-black bg-gradient-to-r from-blue-600 via-purple-500 to-indigo-600 bg-clip-text text-transparent cursor-default overflow-hidden whitespace-nowrap"
+              className="text-3xl font-bold italic tracking-tight bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent cursor-default overflow-hidden whitespace-nowrap drop-shadow-sm"
+              style={{ fontFamily: '"Comic Sans MS", "Comic Sans", cursive' }}
             >
-              DailyScoop
+              NextSpace 
             </motion.h2>
           ) : (
             <>
@@ -870,8 +849,8 @@ function SidebarContent({
           <div className="relative mb-6">
             <form onSubmit={handleSearch} className="relative group">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-600 group-focus-within:text-indigo-700 transition-colors"
-                size={18}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[var(--primary)]"
+                size={19}
               />
               <input
                 ref={searchInputRef}
@@ -879,15 +858,23 @@ function SidebarContent({
                 placeholder="Search news..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-xl border-2 border-indigo-100 bg-indigo-50/40 py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 placeholder:text-indigo-400/60 transition-all duration-300 hover:bg-indigo-50/60 hover:border-indigo-200 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-slate-100 dark:placeholder:text-indigo-700/50 dark:focus:bg-slate-900"
+                className="h-12 w-full rounded-2xl border border-slate-200/80 bg-white/92 pl-12 pr-16 text-[15px] font-semibold text-slate-800 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.65)] transition-all duration-300 placeholder:text-slate-400 focus:outline-none focus:border-[var(--primary)]/30 focus:ring-4 focus:ring-[var(--primary)]/8 dark:border-slate-700/80 dark:bg-slate-900/88 dark:text-slate-100 dark:placeholder:text-slate-500"
               />
-              {query && (
+              {query ? (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+                  className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   <X size={14} />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  aria-label="Search news"
+                  className="absolute right-3 top-1/2 inline-flex h-8 min-w-10 -translate-y-1/2 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 px-2.5 text-slate-500 shadow-sm transition-all hover:bg-slate-100 hover:text-[var(--primary)] dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <span className="text-sm font-semibold leading-none">/</span>
                 </button>
               )}
             </form>
