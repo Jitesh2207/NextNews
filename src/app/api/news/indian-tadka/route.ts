@@ -20,7 +20,7 @@ interface RSSItem extends Parser.Item {
 }
 
 const INDIAN_NEWS_FEEDS: Record<string, string> = {
-  ndtv: "https://feeds.feedburner.com/ndtvnews-top-stories",
+  "india-today": "https://www.indiatoday.in/rss/home",
   "times-of-india": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
   "hindustan-times": "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml",
   "indian-express": "https://indianexpress.com/feed/",
@@ -28,7 +28,7 @@ const INDIAN_NEWS_FEEDS: Record<string, string> = {
 };
 
 const SOURCE_NAMES: Record<string, string> = {
-  ndtv: "NDTV News",
+  "india-today": "India Today",
   "times-of-india": "Times of India",
   "hindustan-times": "Hindustan Times",
   "indian-express": "Indian Express",

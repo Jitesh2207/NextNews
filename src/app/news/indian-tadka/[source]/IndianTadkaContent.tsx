@@ -21,7 +21,7 @@ interface IndianTadkaContentProps {
 }
 
 const SOURCE_NAMES: Record<string, string> = {
-  ndtv: "NDTV News",
+  "india-today": "India Today",
   "times-of-india": "Times of India",
   "hindustan-times": "Hindustan Times",
   "indian-express": "Indian Express",

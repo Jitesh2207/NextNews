@@ -177,10 +177,10 @@ const CATEGORY_NAV_ITEMS: CategoryNavItem[] = [
 
 const INDIAN_TADKA_SOURCES = [
   {
-    name: "NDTV",
-    id: "ndtv",
-    href: "/news/indian-tadka/ndtv",
-    icon: "/indianTadka/NDTV.jpg",
+    name: "India Today",
+    id: "india-today",
+    href: "/news/indian-tadka/india-today",
+    icon: "/indianTadka/indiaToday.png",
   },
   {
     name: "Times of India",
@@ -705,10 +705,10 @@ function SidebarContent({
     }, 150);
   };
   const navItemClass = (active: boolean) =>
-    `group flex items-center ${isDesktopCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} rounded-xl transition text-sm font-medium ${
+    `group flex items-center ${isDesktopCollapsed ? "justify-center px-0 w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} transition-all duration-300 text-sm font-medium ${
       active
-        ? "bg-[var(--card)] text-[var(--primary)] border border-[var(--primary)]"
-        : "text-gray-700 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-300 dark:hover:bg-slate-800"
+        ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+        : "rounded-xl text-gray-700 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-300 dark:hover:bg-slate-800"
     }`;
 
   const selectedTopicLabels = selectedTopics
@@ -886,6 +886,7 @@ function SidebarContent({
             title="Streamings"
             isDesktopCollapsed={isDesktopCollapsed}
             onToggleDesktop={onToggleDesktop}
+            defaultOpen={pathname.startsWith("/live-news") || pathname.startsWith("/shorts")}
             icon={
               <LottiePlayer
                 src="/indianTadka/play button animation.json"
@@ -895,10 +896,10 @@ function SidebarContent({
           >
             <Link
               href="/live-news"
-              className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} rounded-xl text-sm font-medium transition ${
+              className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} transition-all duration-300 text-sm font-medium ${
                 pathname.startsWith("/live-news")
-                  ? "bg-[var(--card)] text-[var(--primary)] border border-[var(--primary)]"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
+                  ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                  : "rounded-xl text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
               }`}
               onClick={closeAndNavigate}
               title={isDesktopCollapsed ? "News Streaming" : undefined}
@@ -921,10 +922,10 @@ function SidebarContent({
             </Link>
             <Link
               href="/shorts"
-              className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} rounded-xl text-sm font-medium transition ${
+              className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} transition-all duration-300 text-sm font-medium ${
                 pathname.startsWith("/shorts")
-                  ? "bg-[var(--card)] text-[var(--primary)] border border-[var(--primary)]"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
+                  ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                  : "rounded-xl text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
               }`}
               onClick={closeAndNavigate}
               title={isDesktopCollapsed ? "Shorts" : undefined}
@@ -949,6 +950,7 @@ function SidebarContent({
             }
             isDesktopCollapsed={isDesktopCollapsed}
             onToggleDesktop={onToggleDesktop}
+            defaultOpen={INDIAN_TADKA_SOURCES.some((s) => pathname === s.href)}
             icon={
               <LottiePlayer
                 src="/indianTadka/fire.json"
@@ -960,10 +962,10 @@ function SidebarContent({
               <Link
                 key={source.id}
                 href={source.href}
-                className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} rounded-xl text-sm font-medium transition ${
+                className={`flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-2"} transition-all duration-300 text-sm font-medium ${
                   pathname === source.href
-                    ? "bg-[var(--card)] text-[var(--primary)] border border-[var(--primary)]"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "rounded-xl text-gray-600 hover:bg-gray-100 hover:text-[var(--primary)] dark:text-slate-400 dark:hover:bg-slate-800"
                 }`}
                 onClick={closeAndNavigate}
                 title={isDesktopCollapsed ? source.name : undefined}
@@ -1113,12 +1115,17 @@ function SidebarContent({
               title="Extra Options"
               isDesktopCollapsed={isDesktopCollapsed}
               onToggleDesktop={onToggleDesktop}
+              defaultOpen={pathname.startsWith("/personalization") || pathname.startsWith("/appearance") || pathname.startsWith("/plans")}
               showTreeLines={true}
               icon={<Sparkles size={16} className="text-amber-500" />}
             >
               <Link
                 href="/personalization"
-                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 hover:text-[var(--primary)] cursor-pointer transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800`}
+                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/personalization")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-[var(--primary)] hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
                 onClick={closeAndNavigate}
                 title={isDesktopCollapsed ? "Personalization" : undefined}
               >
@@ -1134,7 +1141,11 @@ function SidebarContent({
               </Link>
               <Link
                 href="/appearance"
-                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 hover:text-[var(--primary)] cursor-pointer transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800`}
+                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/appearance")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-[var(--primary)] hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
                 onClick={closeAndNavigate}
                 title={isDesktopCollapsed ? "Appearance" : undefined}
               >
@@ -1151,7 +1162,11 @@ function SidebarContent({
               </Link>
               <Link
                 href="/plans"
-                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 hover:text-indigo-600 cursor-pointer transition-colors rounded-xl hover:bg-slate-100 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800`}
+                className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/plans")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800"
+                }`}
                 onClick={closeAndNavigate}
                 title={isDesktopCollapsed ? "Subscriptions" : undefined}
               >
@@ -1173,12 +1188,17 @@ function SidebarContent({
             title="More Info"
             isDesktopCollapsed={isDesktopCollapsed}
             onToggleDesktop={onToggleDesktop}
+            defaultOpen={pathname.startsWith("/about") || pathname.startsWith("/support") || pathname.startsWith("/privacy-policy")}
             showTreeLines={true}
             icon={<HelpCircle size={16} className="text-blue-500" />}
           >
             <Link
               href="/about"
-              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 transition-colors hover:text-[var(--primary)] rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800`}
+              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/about")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-[var(--primary)] hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
               onClick={closeAndNavigate}
               title={isDesktopCollapsed ? "About NextNews" : undefined}
             >
@@ -1195,7 +1215,11 @@ function SidebarContent({
             </Link>
             <Link
               href="/support"
-              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 hover:text-[var(--primary)] cursor-pointer transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800`}
+              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/support")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-[var(--primary)] hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
               onClick={closeAndNavigate}
               title={isDesktopCollapsed ? "Contact Support" : undefined}
             >
@@ -1211,7 +1235,11 @@ function SidebarContent({
             </Link>
             <Link
               href="/privacy-policy"
-              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5"} text-sm text-slate-600 hover:text-[var(--primary)] cursor-pointer transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800`}
+              className={`inline-flex items-center ${isDesktopCollapsed ? "justify-center w-12 h-12 mx-auto" : "gap-3 px-4 py-1.5 w-full"} text-sm font-medium transition-all duration-300 rounded-xl ${
+                  pathname.startsWith("/privacy-policy")
+                    ? "text-[var(--primary)] dark:text-sky-400 font-bold relative rounded-xl bg-indigo-50/30 dark:bg-sky-400/10 before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-5 before:bg-[var(--primary)] dark:before:bg-sky-400 before:rounded-full before:shadow-[0_0_12px_var(--primary)] dark:before:shadow-[0_0_15px_rgba(56,189,248,0.5)]"
+                    : "text-slate-600 hover:text-[var(--primary)] hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
               onClick={closeAndNavigate}
               title={isDesktopCollapsed ? "Privacy Policy" : undefined}
             >
@@ -1402,6 +1430,13 @@ function CollapsibleSection({
   onToggleDesktop?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  useEffect(() => {
+    if (defaultOpen && !isDesktopCollapsed) {
+      setIsOpen(true);
+    }
+  }, [defaultOpen, isDesktopCollapsed]);
+
   const flattenedChildren = (Array.isArray(children) ? children : [children])
     .flat()
     .filter(Boolean);
