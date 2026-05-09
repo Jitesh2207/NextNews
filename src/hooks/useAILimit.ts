@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ACTIVITY_DATA_EVENT,
+  calculateFreeLimit,
+  calculateWeightedUsage,
+  FREE_PLAN_COOLDOWN_DAYS,
   readActivityAnalytics,
+  MAX_FREE_CAP,
 } from "@/lib/activityAnalytics";
 import { loadUserSubscriptionPlan } from "@/app/services/subscriptionPlanService";
-import { AI_FREE_LIMIT, FREE_PLAN_COOLDOWN_DAYS } from "@/lib/aiUsageLimit";
 
 export function useAILimit() {
   const [hasPaidPlan, setHasPaidPlan] = useState(false);
@@ -14,6 +17,7 @@ export function useAILimit() {
   const [planLimit, setPlanLimit] = useState(0);
   const [nextAvailableAt, setNextAvailableAt] = useState<string | null>(null);
   const [isFreePlanCooldown, setIsFreePlanCooldown] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   const refreshUsageState = useCallback(async () => {
     const [activity, planResult] = await Promise.all([
@@ -26,52 +30,51 @@ export function useAILimit() {
     const isUnlimitedPlan =
       (Boolean(plan?.status === "active") && Boolean(plan?.plan_credit_is_unlimited)) ||
       (Boolean(plan?.status === "active") && plan?.plan_credit_amount === 0);
-    const isTrulyFreeUser = !plan;
 
-    // Use weighted credit system for all users
-    const aiWeightedUsage =
-      (activity?.aiSummaryCount || 0) * 1 +
-      (activity?.personalizationSuggestionCount || 0) * 2 +
-      (activity?.regionSuggestionCount || 0) * 2;
-
-    const otherUsage = (activity?.articleReadCount || 0);
-    const otherEventsCount = (activity?.events || [])
-      .filter(e => !["ai_summary", "personalization_suggestion", "region_suggestion", "article_open"].includes(e.type))
-      .length;
-
-    const weightedCreditUsage = aiWeightedUsage + otherUsage + otherEventsCount;
+    // Use shared weighted credit system calculation
+    const weightedCreditUsage = activity ? calculateWeightedUsage(activity) : 0;
 
     let isLocked = false;
     let nextAvail: string | null = null;
     let isCooldown = false;
+    let effectiveLimit = 0;
 
     if (isExemptFromFreeLimit) {
+      effectiveLimit = plan?.plan_credit_amount || 0;
       if (!isUnlimitedPlan) {
-        const planCredits = plan?.plan_credit_amount || 0;
-        isLocked = weightedCreditUsage >= planCredits;
+        isLocked = weightedCreditUsage >= effectiveLimit;
       }
-    } else if (isTrulyFreeUser) {
-      isLocked = weightedCreditUsage >= AI_FREE_LIMIT;
+    } else {
+      // Stepped limit logic for free users
+      let cycle = activity?.freeCooldownCycle || 0;
+      let cooldownEnd = activity?.freeCooldownEnd || null;
+      const now = Date.now();
 
-      if (isLocked && typeof window !== "undefined") {
-        const cooldownKey = "free_plan_cooldown_end";
-        const savedCooldownEnd = localStorage.getItem(cooldownKey);
-
-        if (savedCooldownEnd) {
-          const cooldownEndTime = new Date(savedCooldownEnd).getTime();
-          const now = new Date().getTime();
-
-          if (now < cooldownEndTime) {
-            isCooldown = true;
-            nextAvail = savedCooldownEnd;
-          } else {
-            localStorage.removeItem(cooldownKey);
-          }
+      if (cooldownEnd) {
+        if (now >= new Date(cooldownEnd).getTime()) {
+          // Cooldown passed
+          cycle += 1;
+          cooldownEnd = null;
         } else {
-          const cooldownEndTime = new Date(Date.now() + FREE_PLAN_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
-          localStorage.setItem(cooldownKey, cooldownEndTime.toISOString());
           isCooldown = true;
-          nextAvail = cooldownEndTime.toISOString();
+          nextAvail = cooldownEnd;
+        }
+      }
+
+      effectiveLimit = calculateFreeLimit(cycle);
+      
+      if (weightedCreditUsage >= MAX_FREE_CAP) {
+        isLocked = true;
+        isCooldown = false;
+        nextAvail = null;
+      } else {
+        isLocked = weightedCreditUsage >= effectiveLimit;
+
+        if (isLocked && !isCooldown) {
+          // Just reached limit, predict next available
+          const estimatedEnd = new Date(now + FREE_PLAN_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+          nextAvail = estimatedEnd.toISOString();
+          isCooldown = true;
         }
       }
     }
@@ -80,7 +83,7 @@ export function useAILimit() {
       total: weightedCreditUsage,
       isExempt: isExemptFromFreeLimit,
       isLocked,
-      planCredits: plan?.plan_credit_amount || 0,
+      planCredits: effectiveLimit,
       isUnlimited: isUnlimitedPlan,
       nextAvailableAt: nextAvail,
       isFreePlanCooldown: isCooldown,
@@ -100,6 +103,7 @@ export function useAILimit() {
         setPlanLimit(next.planCredits);
         setNextAvailableAt(next.nextAvailableAt);
         setIsFreePlanCooldown(next.isFreePlanCooldown);
+        setIsLocked(next.isLocked);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -138,14 +142,10 @@ export function useAILimit() {
     };
   }, [refreshUsageState]);
 
-  const isLocked = hasPaidPlan
-    ? (!isUnlimited && planLimit > 0 && totalAIUsage >= planLimit)
-    : (totalAIUsage >= AI_FREE_LIMIT);
-
   return {
     isLocked,
     totalAIUsage,
-    limit: hasPaidPlan ? planLimit : AI_FREE_LIMIT,
+    limit: planLimit,
     loading,
     isActive: hasPaidPlan,
     isUnlimited,

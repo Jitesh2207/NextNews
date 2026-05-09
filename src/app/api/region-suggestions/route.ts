@@ -137,9 +137,23 @@ export async function POST(req: Request) {
 
     const access = await evaluateAiUsageAccess(token);
     if (access.isLocked) {
+      if (access.hasPaidPlan) {
+        return NextResponse.json(
+          { error: `You've reached your plan limit of ${access.limit} usages. Upgrade your plan to continue.` },
+          { status: 403 },
+        );
+      }
+
+      if (access.totalAIUsage >= 100) {
+        return NextResponse.json(
+          { error: "You've reached the total free limit of 100 AI usages. Activate a plan to unlock permanently." },
+          { status: 403 },
+        );
+      }
+
       return NextResponse.json(
         {
-          error: `You've reached your free limit of ${AI_FREE_LIMIT} AI usages. Upgrade to a plan to continue.`,
+          error: `You've reached your free limit of ${access.limit} AI usages. Upgrade or wait for the cooldown to continue.`,
         },
         { status: 403 },
       );
