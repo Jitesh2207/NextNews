@@ -818,8 +818,7 @@ export function BillingSettingsCard({
         activePlanDate = data.current_period_start || new Date().toISOString();
         if (data.plan_key === "free") {
           activePlanExpiry = data.trial_end ? new Date(data.trial_end) : null;
-          // For free plan, use the stepped limit logic
-          planTotal = calculateFreeLimit(analytics.freeCooldownCycle || 0);
+          // Explicitly activated free plans use the plan_credit_amount (600) rather than stepped logic.
         } else {
           activePlanExpiry = data.current_period_end
             ? new Date(data.current_period_end)
