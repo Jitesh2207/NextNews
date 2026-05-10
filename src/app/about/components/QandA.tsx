@@ -395,8 +395,8 @@ export const faqs = [
     a: "We are currently beta-testing a community feature where readers can discuss stories. Stay tuned for announcements!",
   },
   {
-    q: "Who are the founders of NextNews?",
-    a: "NextNews was founded by Galib Morsed and Jitesh Roy, two visionary technologists and engineers dedicated to redefining how the world consumes information through AI and elegant design.",
+    q: "Who is the founder of NextNews?",
+    a: "NextNews was founded by Galib Morsed, a visionary technologist and engineer dedicated to redefining how the world consumes information through AI and elegant design.",
   },
   {
     q: "What is the team's core philosophy?",
@@ -405,10 +405,6 @@ export const faqs = [
   {
     q: "Who is Galib Morsed?",
     a: "Galib Morsed is the Lead Engineer and Founder of NextNews. A passionate developer and innovator, he handles the core architecture, AI integrations, and the premium user experience that defines our platform.",
-  },
-  {
-    q: "Who is Jitesh Roy?",
-    a: "Jitesh Roy is the DevOps Engineer and Co-Founder of NextNews. He is the backbone of our technical operations, ensuring that our servers are lightning-fast, secure, and capable of handling massive global traffic 24/7.",
   },
 ];
 
