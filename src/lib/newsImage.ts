@@ -12,3 +12,19 @@ export function getNewsImageSrc(url?: string | null): string {
     return "/news1.jpg";
   }
 }
+
+export function getSourceLogoSrc(url?: string | null): string | null {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`;
+  } catch {
+    return null;
+  }
+}
