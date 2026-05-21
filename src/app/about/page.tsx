@@ -30,7 +30,14 @@ import {
 } from "lucide-react";
 import { FAQSection } from "./components/QandA";
 import LottiePlayer from "../components/LottiePlayer";
-import { AnimatePresence, motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useInView,
+  useMotionValue,
+  useTransform,
+  animate,
+} from "framer-motion";
 
 const desktopVariants = {
   initial: { opacity: 0, y: 20, scale: 0.95 },
@@ -187,8 +194,8 @@ export default function AboutPage() {
             className="max-w-[50rem] mx-auto text-base md:text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed font-medium"
           >
             NextNews brings together curated categories, top headlines, live
-            coverage, saved notes, and user preferences so readers can follow what
-            matters to them without losing context.
+            coverage, saved notes, and user preferences so readers can follow
+            what matters to them without losing context.
           </motion.p>
 
           <motion.div variants={itemVariants} className="mb-20">
@@ -263,7 +270,10 @@ export default function AboutPage() {
           viewport={{ once: true, margin: "-100px" }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <motion.div variants={itemVariants} className="text-center mb-8 sm:mb-10">
+          <motion.div
+            variants={itemVariants}
+            className="text-center mb-8 sm:mb-10"
+          >
             <h3 className="text-sm font-semibold text-slate-400 tracking-wider uppercase mb-4 flex items-center justify-center gap-2">
               <Sparkles size={16} className="text-blue-400" />
               Why Readers Trust NextNews
@@ -338,7 +348,10 @@ export default function AboutPage() {
             })}
           </div>
 
-          <motion.div variants={itemVariants} className="mt-8 flex flex-col items-center gap-3 text-center">
+          <motion.div
+            variants={itemVariants}
+            className="mt-8 flex flex-col items-center gap-3 text-center"
+          >
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Interested in media collaborations or contributor opportunities?
             </p>
@@ -390,7 +403,10 @@ export default function AboutPage() {
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
         >
           {/* Section Header */}
-          <motion.div variants={itemVariants} className="text-center mb-12 sm:mb-16">
+          <motion.div
+            variants={itemVariants}
+            className="text-center mb-12 sm:mb-16"
+          >
             <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-cyan-600 bg-cyan-100 rounded-full mb-6 dark:bg-cyan-900/30 dark:text-cyan-400">
               <Zap size={16} />
               <span>Our Impact</span>
@@ -474,8 +490,16 @@ export default function AboutPage() {
             <span>Process</span>
           </motion.div>
 
-          <motion.h2 variants={itemVariants} className="text-3xl md:text-4xl font-bold mb-4">How It Works</motion.h2>
-          <motion.p variants={itemVariants} className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto mb-16">
+          <motion.h2
+            variants={itemVariants}
+            className="text-3xl md:text-4xl font-bold mb-4"
+          >
+            How It Works
+          </motion.h2>
+          <motion.p
+            variants={itemVariants}
+            className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto mb-16"
+          >
             Stay informed with a seamless news experience. Personalized,
             AI-enhanced, and always up to date.
           </motion.p>
@@ -613,7 +637,10 @@ export default function AboutPage() {
           viewport={{ once: true, margin: "-100px" }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
         >
-          <motion.div variants={itemVariants} className="flex flex-col items-center text-center mb-16 sm:mb-20">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col items-center text-center mb-16 sm:mb-20"
+          >
             <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full mb-6 dark:bg-blue-900/30 dark:text-blue-400">
               <Users size={16} />
               <span>Team</span>
@@ -739,7 +766,10 @@ export default function AboutPage() {
             </div>
 
             {/* Right side: Our Story */}
-            <motion.div variants={itemVariants} className="w-full lg:w-[400px] xl:w-[450px] shrink-0">
+            <motion.div
+              variants={itemVariants}
+              className="w-full lg:w-[400px] xl:w-[450px] shrink-0"
+            >
               <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 sm:p-10 shadow-sm border-2 border-blue-200/50 dark:from-slate-800 dark:to-slate-900/80 dark:border-blue-700/30 h-full flex flex-col relative overflow-hidden group hover:shadow-xl transition-all duration-300">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl -mr-10 -mt-10 transition-all duration-500 group-hover:bg-blue-400/20"></div>
                 <div className="absolute bottom-0 left-0 w-40 h-40 bg-cyan-400/10 rounded-full blur-3xl -ml-10 -mb-10 transition-all duration-500 group-hover:bg-cyan-400/20"></div>
@@ -782,7 +812,10 @@ export default function AboutPage() {
           viewport={{ once: true, margin: "-100px" }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
-          <motion.div variants={itemVariants} className="flex flex-col items-center text-center mb-16 sm:mb-20">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col items-center text-center mb-16 sm:mb-20"
+          >
             <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full mb-6 dark:bg-blue-900/30 dark:text-blue-400">
               <Star size={16} />
               <span>Features</span>
@@ -940,14 +973,21 @@ export default function AboutPage() {
               whileHover={{ rotate: 10, scale: 1.1 }}
               className="relative inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md ring-1 ring-blue-100 dark:ring-slate-700 mb-6 mx-auto"
             >
-              <Image src="/logo1.png" alt="NextNews" fill className="object-contain p-2" />
+              <Image
+                src="/logo1.png"
+                alt="NextNews"
+                fill
+                className="object-contain p-2"
+              />
             </motion.div>
 
             <h2 className="relative text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
               Stay Informed. Stay Ahead.
             </h2>
             <p className="relative text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-2 text-[15px] leading-relaxed">
-              NextNews delivers real-time headlines, AI-powered insights, and a personalized feed — all in one place with premium plans for power readers.
+              NextNews delivers real-time headlines, AI-powered insights, and a
+              personalized feed — all in one place with premium plans for power
+              readers.
             </p>
 
             {/* Cool emoji Lottie */}
@@ -1009,11 +1049,11 @@ export default function AboutPage() {
                 </motion.a>
                 <motion.a
                   whileHover={{ y: -3, color: "#fff" }}
-                  href="https://www.linkedin.com/company/nextnews"
+                  href="https://x.com/NextNewsCo"
                   className="p-2 bg-slate-800 rounded-full transition-colors text-slate-300"
-                  aria-label="Follow us on LinkedIn"
+                  aria-label="Follow us on Twitter"
                 >
-                  <Linkedin size={18} />
+                  <Twitter size={18} />
                 </motion.a>
                 <motion.a
                   whileHover={{ y: -3, color: "#fff" }}

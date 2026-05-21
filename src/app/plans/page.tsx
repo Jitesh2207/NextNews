@@ -98,23 +98,23 @@ const MS_IN_DAY = 24 * 60 * 60 * 1000;
 const productPerks = [
   {
     icon: Sparkles,
-    title: "Premium Reading",
-    desc: "A more polished reading flow for people who want fewer distractions and more value from every visit.",
+    title: "Better Reading",
+    desc: "Cleaner reading with fewer distractions and more value in every visit.",
   },
   {
     icon: SlidersHorizontal,
-    title: "Personalized Experience",
-    desc: "Plans are designed to complement personalized topics, sources, and the wider account experience.",
+    title: "Personalized Feed",
+    desc: "Topics, sources, and settings adapt to what you like.",
   },
   {
     icon: NotebookPen,
     title: "Reader Tools",
-    desc: "Notes, saved preferences, and upcoming premium improvements are aimed at active readers, not passive scrolling.",
+    desc: "Save articles, add notes, and manage your preferences in one place.",
   },
   {
     icon: Radio,
-    title: "Growing Platform",
-    desc: "Subscriptions support a product that continues expanding across live coverage, support tools, and premium content.",
+    title: "More Features Ahead",
+    desc: "Your plan helps us build live coverage, support, and premium tools.",
   },
 ];
 
@@ -500,7 +500,7 @@ function PlansContent() {
       )}
 
       <section className="px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
           {productPerks.map((item, index) => {
             const IconComponent = item.icon;
             const colors = perkColors[index % perkColors.length];
@@ -510,17 +510,20 @@ function PlansContent() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className={`group relative rounded-3xl bg-gradient-to-br ${colors.card} p-8 flex flex-col items-start text-left transition-all duration-300 border-2`}
+                className={`group relative rounded-3xl bg-gradient-to-br ${colors.card} p-4 sm:p-8 flex flex-col items-start text-left transition-all duration-300 border-2`}
               >
                 <div
-                  className={`mb-5 bg-gradient-to-br ${colors.icon} rounded-full p-2.5 shadow-lg border border-white/30 transition-transform group-hover:scale-110 w-fit`}
+                  className={`mb-4 sm:mb-5 bg-gradient-to-br ${colors.icon} rounded-full p-2.5 shadow-lg border border-white/30 transition-transform group-hover:scale-110 w-fit`}
                 >
-                  <IconComponent size={20} className="text-white" />
+                  <IconComponent
+                    size={18}
+                    className="text-white sm:h-5 sm:w-5"
+                  />
                 </div>
-                <h2 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
+                <h2 className="text-base sm:text-xl font-bold mb-2 text-slate-900 dark:text-white">
                   {item.title}
                 </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   {item.desc}
                 </p>
               </motion.div>
