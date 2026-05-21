@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 
 import FeedbackToast from "../components/feedbackToast";
+import { SUPPORT_ISSUE_TYPES } from "@/lib/supportComplaintOptions";
 
 export default function SupportPage() {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -404,48 +405,11 @@ export default function SupportPage() {
                           required
                         >
                           <option value="">Select an option...</option>
-                          <option value="General Support & Questions">
-                            General Support & Questions
-                          </option>
-                          <option value="Account & Login Help">
-                            Account & Login Help
-                          </option>
-                          <option value="Sign-up & Registration">
-                            Sign-up & Registration
-                          </option>
-                          <option value="Profile & Settings Updates">
-                            Profile & Settings Updates
-                          </option>
-                          <option value="Billing & Payments">
-                            Billing & Payments
-                          </option>
-                          <option value="Report a Bug / Technical Issue">
-                            Report a Bug / Technical Issue
-                          </option>
-                          <option value="Feed & Personalization Setup">
-                            Feed & Personalization Setup
-                          </option>
-                          <option value="API Credits & Limits">
-                            API Credits & Limits
-                          </option>
-                          <option value="Search Functionality Help">
-                            Search Functionality Help
-                          </option>
-                          <option value="AI Summaries & Suggestions">
-                            AI Summaries & Suggestions
-                          </option>
-                          <option value="Saved Notes Help">
-                            Saved Notes Help
-                          </option>
-                          <option value="Live News & Video Playback">
-                            Live News & Video Playback
-                          </option>
-                          <option value="Shorts & Video Reels">
-                            Shorts & Video Reels
-                          </option>
-                          <option value="Privacy & Data Requests">
-                            Privacy & Data Requests
-                          </option>
+                          {SUPPORT_ISSUE_TYPES.map((issueType) => (
+                            <option key={issueType} value={issueType}>
+                              {issueType}
+                            </option>
+                          ))}
                         </select>
                       </div>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
+import { isKnownSupportIssueType } from "@/lib/supportComplaintOptions";
 
 export const runtime = "nodejs";
 
@@ -9,14 +10,6 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 6;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CONTACT_REGEX = /^[0-9+()\-\s]{7,20}$/;
-const ALLOWED_SUBJECTS = new Set([
-    "Technical Issue",
-    "Payment Issue",
-    "Account Issue",
-    "Registration Related Issue",
-    "Notes Issue",
-]);
-
 type ComplaintPayload = {
     name: string;
     email: string;
@@ -88,7 +81,7 @@ function validatePayload(payload: unknown) {
         return { ok: false as const, error: "Please provide a valid email address" };
     }
 
-    if (!ALLOWED_SUBJECTS.has(subject)) {
+    if (subject.length < 3 || subject.length > 120) {
         return { ok: false as const, error: "Please select a valid issue type" };
     }
 
@@ -135,6 +128,10 @@ export async function POST(req: Request) {
         }
 
         const { name, email, subject, contactNumber, website, formStartedAt } = parsed.data;
+
+        if (!isKnownSupportIssueType(subject)) {
+            console.warn(`Received unknown support issue type: '${subject}'`);
+        }
 
         if (website) {
             return NextResponse.json({ ok: true });
