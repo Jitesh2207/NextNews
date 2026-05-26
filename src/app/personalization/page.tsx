@@ -2,15 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import {
-  AlertTriangle,
-  ArrowRight,
-  Check,
-  Loader2,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ArrowRight, Check, Loader2, Save, Trash2, X } from "lucide-react";
 import {
   AVAILABLE_PERSONALIZATION_TOPICS,
   DEFAULT_PERSONALIZATION_TOPICS,
@@ -25,6 +17,10 @@ import {
 } from "../services/personalizationService";
 import PersonalizationAiSuggestions from "./components/personalizationAiSuggestions";
 import PersonalizationRegionSelector from "./components/PersonalizationRegionSelector";
+import PersonalizationNewsSources, {
+  PERSONALIZATION_DEFAULT_SOURCE_SELECTION,
+  PERSONALIZATION_MAX_SOURCES,
+} from "./components/PersonalizationNewsSources";
 import StatusPopup from "../components/statusPopup";
 import PersonalizationPromoAd, {
   PERSONALIZATION_PROMO_DISMISS_KEY,
@@ -40,12 +36,6 @@ type SuggestedTopicToast = {
   text: string;
   tone: "success" | "warning";
 } | null;
-
-const AVAILABLE_SOURCES = [
-  "NewsAPI Top Headlines",
-  "NewsAPI Search (Everything)",
-  "YouTube Live News Streams",
-];
 
 const AVAILABLE_TOPICS = [...AVAILABLE_PERSONALIZATION_TOPICS];
 const MAX_TOPICS = MAX_PERSONALIZATION_TOPICS;
@@ -74,11 +64,12 @@ const cardVariants: Variants = {
 };
 
 export default function PersonalizationPage() {
-  const [favoriteSources, setFavoriteSources] = useState<string[]>([]);
+  const [favoriteSources, setFavoriteSources] = useState<string[]>(
+    PERSONALIZATION_DEFAULT_SOURCE_SELECTION,
+  );
   const [favoriteTopics, setFavoriteTopics] = useState<string[]>([]);
   const [favoriteRegions, setFavoriteRegions] = useState<string[]>([]);
   const [topicSearch, setTopicSearch] = useState("");
-  const [userEmail, setUserEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
@@ -91,7 +82,10 @@ export default function PersonalizationPage() {
   const [promoResetKey, setPromoResetKey] = useState(0);
 
   const hasSelection = useMemo(
-    () => favoriteSources.length > 0 || favoriteTopics.length > 0 || favoriteRegions.length > 0,
+    () =>
+      favoriteSources.length > 0 ||
+      favoriteTopics.length > 0 ||
+      favoriteRegions.length > 0,
     [favoriteSources.length, favoriteTopics.length, favoriteRegions.length],
   );
 
@@ -131,13 +125,6 @@ export default function PersonalizationPage() {
 
     const loadData = async () => {
       try {
-        // Read email from localStorage — no Supabase call needed
-        const cachedEmail =
-          localStorage.getItem("auth_email") ||
-          localStorage.getItem("userEmail") ||
-          "";
-        if (mounted) setUserEmail(cachedEmail);
-
         const { data, error: fetchError } = await getUserPersonalization();
         if (fetchError) {
           if (mounted) {
@@ -152,7 +139,7 @@ export default function PersonalizationPage() {
         if (!mounted) return;
 
         if (!data) {
-          setFavoriteSources([]);
+          setFavoriteSources(PERSONALIZATION_DEFAULT_SOURCE_SELECTION);
           setFavoriteTopics(DEFAULT_TOPIC_SELECTION);
           setFavoriteRegions([]);
           return;
@@ -162,7 +149,12 @@ export default function PersonalizationPage() {
           ? data.favorite_topics
           : [];
 
-        setFavoriteSources(data.favorite_sources ?? []);
+        setFavoriteSources(
+          Array.isArray(data.favorite_sources) &&
+            data.favorite_sources.length > 0
+            ? data.favorite_sources.slice(0, PERSONALIZATION_MAX_SOURCES)
+            : PERSONALIZATION_DEFAULT_SOURCE_SELECTION,
+        );
         setFavoriteTopics(
           Array.isArray(data.favorite_topics) && data.favorite_topics.length > 0
             ? persistedTopics
@@ -322,7 +314,7 @@ export default function PersonalizationPage() {
         return;
       }
 
-      setFavoriteSources([]);
+      setFavoriteSources(PERSONALIZATION_DEFAULT_SOURCE_SELECTION);
       setFavoriteTopics([]);
       setFavoriteRegions([]);
       localStorage.removeItem(PERSONALIZATION_PROMO_DISMISS_KEY);
@@ -405,71 +397,10 @@ export default function PersonalizationPage() {
           custom={1}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/85 p-6 shadow-sm backdrop-blur sm:p-8"
         >
-          <div className="mb-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
-              News Sources
-            </h2>
-            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {AVAILABLE_SOURCES.map((source) => {
-              const isSelected = favoriteSources.includes(source);
-              return (
-                <motion.label
-                  key={source}
-                  whileHover={{ y: -1, scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  className={`group relative flex cursor-pointer items-center gap-3 rounded-2xl border transition-all duration-300 px-4 py-3 sm:gap-4 sm:p-5 shadow-sm hover:shadow-md ${
-                    isSelected
-                      ? "border-[var(--primary)] bg-[var(--primary)]/[0.08] dark:bg-[var(--primary)]/[0.12] ring-1 ring-[var(--primary)]/20"
-                      : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-600"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() =>
-                      setFavoriteSources((prev) => toggleValue(prev, source))
-                    }
-                    className="sr-only"
-                  />
-                  <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-300 ${
-                      isSelected
-                        ? "bg-[var(--primary)] border-[var(--primary)] shadow-[0_0_10px_rgba(99,102,241,0.3)]"
-                        : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800 group-hover:border-[var(--primary)]/50"
-                    }`}
-                  >
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        >
-                          <Check
-                            size={14}
-                            strokeWidth={3.5}
-                            className="text-white"
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <span className="flex-1 text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100 transition-colors group-hover:text-slate-900 dark:group-hover:text-white">
-                    {source}
-                  </span>
-                </motion.label>
-              );
-            })}
-          </div>
+          <PersonalizationNewsSources
+            favoriteSources={favoriteSources}
+            onFavoriteSourcesChange={setFavoriteSources}
+          />
         </motion.section>
 
         <motion.section
@@ -479,7 +410,7 @@ export default function PersonalizationPage() {
           custom={2}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/85 p-6 shadow-sm backdrop-blur sm:p-8"
         >
-          <PersonalizationRegionSelector 
+          <PersonalizationRegionSelector
             favoriteRegions={favoriteRegions}
             onToggleRegion={handleRegionToggle}
           />
@@ -748,7 +679,11 @@ export default function PersonalizationPage() {
                         <span className="truncate">{region}</span>
                         <button
                           type="button"
-                          onClick={() => setFavoriteRegions((prev) => prev.filter(r => r !== region))}
+                          onClick={() =>
+                            setFavoriteRegions((prev) =>
+                              prev.filter((r) => r !== region),
+                            )
+                          }
                           className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100/70 text-red-600 transition-colors hover:bg-red-600 hover:text-white dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-600"
                           aria-label={`Remove ${region}`}
                         >
