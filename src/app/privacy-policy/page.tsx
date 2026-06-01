@@ -66,13 +66,14 @@ const policySections: PolicySection[] = [
     title: "Information We Collect",
     icon: Database,
     paragraphs: [
-      "NextNews collects account details, session tokens, personalization preferences, bookmark activity, saved notes, custom settings, and plan-related billing information to operate the application and improve the reading experience.",
-      "Data is stored securely in our databases, processed through integrated service providers, or cached locally inside the user's browser to preserve session state and performance.",
+      "NextNews collects account details, session tokens, personalization preferences, article activity, saved notes, appearance settings, support details, and plan-related billing information to operate the application and improve the reading experience.",
+      "Data may be stored in Supabase database tables, processed through integrated service providers, or cached locally inside the user's browser to preserve session state, product preferences, and performance.",
     ],
     bullets: [
       "Account data includes your email address, profile name, authentication identifiers, and user settings.",
-      "Personalization data captures selected topic filters, feed preferences, and accepted suggestions.",
-      "Reader activity indexes article logs, summaries created, and client diagnostic metrics.",
+      "Personalization data captures selected sources, topics, regions, feed preferences, and accepted suggestions.",
+      "Reader activity can include article-open counts, AI summary usage, personalization usage, category visit duration, weekly goal state, and reading streak progress.",
+      "Support submissions may include name, email, issue type, optional contact number, submission timestamp, and anti-spam metadata.",
     ],
     categories: ["account", "privacy-policies"],
   },
@@ -147,12 +148,13 @@ const policySections: PolicySection[] = [
     title: "Permanent Account Deletion",
     icon: UserRound,
     paragraphs: [
-      "If you no longer wish to use NextNews, you can request permanent deletion of your account. This action can be triggered inside your account settings and requires password or security token confirmation.",
-      "Upon deletion, your account record, profile metadata, saved notes, custom topic lists, and session keys are deleted from our database tables.",
+      "If you no longer wish to use NextNews, you can request permanent deletion of your account. This action can be triggered inside account settings and requires an authenticated session plus explicit DELETE confirmation.",
+      "The current deletion workflow removes the Supabase authentication user, saved notes, and stored Terms acceptance records tied to the account. Some related operational, subscription, support, activity, or provider records may require separate handling where retention is needed for security, billing, legal, or support reasons.",
     ],
     bullets: [
-      "Deletion wipes linked personal database rows across Supabase tables.",
-      "Certain billing records are retained separately for tax, auditing, and compliance purposes.",
+      "Deletion requests are rate-limited to reduce abuse and accidental repeated submissions.",
+      "Local browser settings, cached plan labels, and appearance preferences may also need to be cleared from the device by logging out, clearing browser storage, or using product controls where available.",
+      "Certain billing, webhook, support, or audit records may be retained separately for tax, fraud-prevention, dispute, security, or compliance purposes.",
     ],
     categories: ["account", "login-signup"],
   },
@@ -167,6 +169,8 @@ const policySections: PolicySection[] = [
       "Supabase handles secure database functions and user authentication.",
       "Dodo Payments manages credit card processing and billing ledger entries.",
       "OpenRouter processes anonymous content prompts to generate summaries.",
+      "Google Sheets may store support or complaint submissions submitted through the support route.",
+      "Currents API, Dailymotion, YouTube, and original publishers provide external news, image, video, or stream content.",
     ],
     categories: ["privacy-policies", "account"],
   },
@@ -216,13 +220,14 @@ const policySections: PolicySection[] = [
     title: "Monetization and Subscriptions",
     icon: CreditCard,
     paragraphs: [
-      "NextNews operates on a freemium model offering three plan levels: Free, Pro, and Pro+. We record and utilize your selected plan status to gate access to premium features, AI usage, and advanced search configurations.",
-      "Subscription tiers determine your monthly allotments of News and AI credits and define what features are available.",
+      "NextNews operates on a freemium model offering Free, Pro, and Pro+ access. We record and use selected plan status, billing cycle, provider identifiers, product identifiers, current period dates, credit limits, and entitlement metadata to gate premium features, AI usage, and advanced discovery features.",
+      "Subscription tiers determine API credit allowances and feature access. The active codebase defines Free access as a limited 16-day credit window, Pro monthly and yearly credit pools, Pro+ monthly credits, and Pro+ yearly unlimited API credit access.",
     ],
     bullets: [
-      "Free tier: standard feed access, default topic categories.",
-      "Pro tier: full feed access, basic AI summaries, standard credit limits.",
-      "Pro+ tier: priority live streams, unlimited summaries, advanced personalization.",
+      "Free tier: 600 API call credits for 16 days where available, followed by plan-specific access controls and cooldown logic.",
+      "Pro tier: 8,000 monthly credits or 200,000 yearly credits.",
+      "Pro+ tier: 45,000 monthly credits or unlimited yearly API credits.",
+      "Plan labels and expiry dates may also be cached locally to keep the UI responsive.",
     ],
     categories: ["billing", "events-plan"],
   },
@@ -244,13 +249,14 @@ const policySections: PolicySection[] = [
     title: "API Service Credits",
     icon: CreditCard,
     paragraphs: [
-      "Pro and Pro+ plans are allocated credits to query third-party APIs (including NewsAPI search calls and OpenRouter AI summary generations). These credits represent digital entitlements.",
-      "Credits are allocated at the beginning of each billing cycle and reset automatically on your subscription renewal date.",
+      "Plan credits are used to control access to product actions such as news API requests, AI summaries, personalization suggestions, region suggestions, article opens, and other weighted usage events. These credits are digital service entitlements only.",
+      "Credit calculations may use weighted usage. For example, AI summaries and article opens can count differently from personalization or region suggestions depending on the feature being used.",
     ],
     bullets: [
       "API credits have zero cash value and are non-transferable.",
       "Credit logs track historical consumption metrics to prevent abuse.",
       "Unused credits do not roll over to the next billing cycle.",
+      "Free users may be subject to stepped limits and cooldown windows before additional free usage becomes available.",
     ],
     categories: ["billing", "events-plan"],
   },
@@ -327,15 +333,31 @@ const policySections: PolicySection[] = [
     title: "Reader Activity Analytics",
     icon: NotebookPen,
     paragraphs: [
-      "The application logs client-side event metadata, including read counts, summarization actions, and topic visits, to feed the 'My Activity' dashboard.",
-      "This tracking runs locally using browser cookies or LocalStorage. It helps you see your top topics, category split, and reading milestones.",
+      "The application logs account-linked activity metadata, including article-open events, AI summary usage, personalization suggestions, region suggestions, category visits, duration estimates, weekly goal progress, notes-linked progress, and reading streaks to power the My Activity dashboard.",
+      "Activity data is stored in Supabase when the user is authenticated. It helps show reading milestones, weekly progress, AI usage, and engagement totals, and it also supports free-plan usage limits and cooldown behavior.",
     ],
     bullets: [
       "Analytics dashboards aggregate read counts and summarization frequencies.",
-      "Data is stored inside your browser under your profile key.",
-      "Clearing browser storage resets your local activity dashboard.",
+      "Recent activity history is capped to limit stored event volume.",
+      "Activity rows may include account email, account ID, timestamps, source names, categories, article metadata, and engagement scores.",
+      "Clearing browser storage may remove local UI caches but does not necessarily delete activity already saved in Supabase.",
     ],
     categories: ["feature"],
+  },
+  {
+    title: "Article Views Counter",
+    icon: Eye,
+    paragraphs: [
+      "Article cards and article detail pages may display a live-looking Views count next to the date and reading metadata. In the current implementation, this count is generated in the browser from the article URL, title, and published date, then incremented visually for product presentation.",
+      "This Views display is not currently fetched from a server-side analytics table and should not be interpreted as a verified, publisher-reported, or platform-wide real-time audience measurement.",
+    ],
+    bullets: [
+      "The counter is deterministic for each article so a story starts from a stable-looking baseline.",
+      "The visible number can animate in decimal steps such as 15.6K, 15.7K, and 15.8K.",
+      "The animation respects reduced-motion preferences and blinks only when the displayed value changes.",
+      "Future releases may replace the simulated display with authenticated, aggregated server-side view analytics.",
+    ],
+    categories: ["feature", "privacy-policies"],
   },
   {
     title: "AI Summaries and Explanations",
@@ -355,15 +377,30 @@ const policySections: PolicySection[] = [
     title: "News Explore and Live Discovery",
     icon: Radio,
     paragraphs: [
-      "NextNews relies on external API aggregators (like NewsAPI) and streaming APIs (such as YouTube Live and Dailymotion) to retrieve fresh articles and videos.",
-      "Searches, category choices, and region parameters are sent to external provider endpoints to retrieve relevant headlines.",
+      "NextNews relies on external news and media providers such as Currents API, original article publishers, YouTube, and Dailymotion to retrieve fresh articles, metadata, images, videos, and live stream search results.",
+      "Searches, category choices, country selections, region parameters, article URLs, and normalized video queries may be sent to external provider endpoints to retrieve relevant headlines, article text, thumbnails, embeds, or live videos.",
     ],
     bullets: [
       "Live-stream videos and headlines belong to respective publishers.",
       "Users are responsible for copyright compliance when referencing articles.",
-      "Search queries are processed dynamically without storing history on the server.",
+      "Article pages may fetch original publisher URLs server-side to extract readable title, image, source, publish time, and article text.",
+      "Remote news images may be retrieved through an image proxy so the app can show publisher images with fallback handling.",
     ],
     categories: ["feature"],
+  },
+  {
+    title: "Support, Complaints, and Contact Forms",
+    icon: HeadphonesIcon,
+    paragraphs: [
+      "When you submit a support or complaint form, NextNews collects the details you provide so the support team can understand and respond to the issue. This can include name, email address, issue subject, optional contact number, submission timestamp, and technical anti-spam signals.",
+      "Support submissions are validated, rate-limited, screened for automated bot behavior, and may be appended to a Google Sheets spreadsheet used for support operations.",
+    ],
+    bullets: [
+      "A hidden website field and minimum form-fill timing are used to reduce spam submissions.",
+      "IP address and user-agent-derived identifiers may be used for short-term support form rate limiting.",
+      "Do not include passwords, payment card numbers, government IDs, or highly sensitive personal information in support messages.",
+    ],
+    categories: ["account", "privacy-policies"],
   },
   {
     title: "Video Shorts Integration",
@@ -400,9 +437,10 @@ const policySections: PolicySection[] = [
       "Data retention may vary by feature. Some data remains until the user updates or deletes it, some remains while the account is active, some may be kept for limited operational or legal reasons, and some browser-stored state may persist until cleared by the user or replaced by newer values.",
     ],
     bullets: [
-      "Notes and saved personalization may remain available until the user edits, clears, or deletes them, or until account deletion occurs.",
+      "Notes and saved personalization may remain available until the user edits, clears, deletes them, or requests applicable deletion.",
       "Session-related data may remain in browser storage and cookies until logout, expiration, invalidation, or manual clearing.",
-      "Local analytics may remain in the browser until overwritten, removed, or cleared by the user.",
+      "Activity analytics may remain in Supabase until overwritten, deleted, or handled through account or privacy request workflows.",
+      "Support records may remain in operational support tools for as long as needed to investigate, resolve, audit, or defend against abuse.",
       "Server-side request protection may include rate limiting and token verification for sensitive AI and account operations.",
     ],
     categories: ["privacy-policies"],
@@ -478,21 +516,49 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   if (!query || !query.trim()) return <>{text}</>;
 
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escapedQuery})`, "gi"));
+  const matcher = new RegExp(escapedQuery, "gi");
+  const parts: { text: string; matches: boolean; start: number }[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = matcher.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        text: text.slice(lastIndex, match.index),
+        matches: false,
+        start: lastIndex,
+      });
+    }
+
+    parts.push({
+      text: match[0],
+      matches: true,
+      start: match.index,
+    });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({
+      text: text.slice(lastIndex),
+      matches: false,
+      start: lastIndex,
+    });
+  }
 
   return (
     <>
-      {parts.map((part, index) => {
-        const matches = part.toLowerCase() === query.toLowerCase();
-        return matches ? (
+      {parts.map((part) => {
+        return part.matches ? (
           <mark
-            key={index}
+            key={`match-${part.start}`}
             className="bg-[#bae6fd] text-[#0369a1] dark:bg-[#0284c7]/40 dark:text-[#e0f2fe] rounded-[2px] px-0.5"
           >
-            {part}
+            {part.text}
           </mark>
         ) : (
-          part
+          <span key={`text-${part.start}`}>{part.text}</span>
         );
       })}
     </>

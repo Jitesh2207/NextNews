@@ -14,8 +14,6 @@ import {
   UserRound,
   Search,
   X,
-  Key,
-  Lightbulb,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -77,8 +75,13 @@ const termsSections: TermsSection[] = [
     title: "Prohibited Conduct",
     icon: AlertTriangle,
     paragraphs: [
-      "You must use NextNews in compliance with applicable laws. You are prohibited from attempting to disrupt server endpoints, inject malicious code, harvest platform articles, or scrape data using automated bots.",
-      "Any attempt to bypass rate-limits, exploit payment gateways, or abuse AI tools will lead to immediate account termination."
+      "You must use NextNews in compliance with applicable laws. You are prohibited from attempting to disrupt server endpoints, inject malicious code, harvest platform articles, scrape data using automated bots, overload API routes, submit spam support requests, or interfere with security controls.",
+      "Any attempt to bypass rate limits, forge subscription status, exploit payment gateways, manipulate AI usage credits, abuse support forms, or attack authentication systems may lead to immediate account restriction or termination."
+    ],
+    bullets: [
+      "Do not share, sell, or automate access to your account or session tokens.",
+      "Do not use NextNews to publish, store, or transmit unlawful, abusive, deceptive, or security-compromising content.",
+      "Do not attempt to reverse engineer provider integrations or evade same-origin, token-verification, or webhook-signature checks."
     ],
     categories: ["account"]
   },
@@ -86,14 +89,44 @@ const termsSections: TermsSection[] = [
     title: "SaaS Features and AI Disclaimers",
     icon: Bot,
     paragraphs: [
-      "NextNews includes multiple AI tools (like article summaries, regional guidelines, and topic suggestion engines). These outputs are powered by model providers like OpenRouter and are intended solely as assistive reading tools.",
-      "AI outputs are not guaranteed to be factually complete, accurate, or free of bias. NextNews disclaims all responsibility for decisions made based on AI-generated context."
+      "NextNews includes AI tools such as article summaries, topic suggestions, region suggestions, and assisted reading features. These outputs may be powered by model providers such as OpenRouter and are intended solely as assistive reading tools.",
+      "AI outputs are not guaranteed to be factually complete, accurate, current, or free of bias. You remain responsible for checking original sources before relying on summaries, recommendations, or generated explanations."
     ],
     bullets: [
       "Summaries represent synthetic evaluations of external news, not factual guarantees.",
-      "AI metrics are subject to credit balances and rate-limiting thresholds."
+      "AI requests may send article title, source, description, and content excerpts to the model provider.",
+      "AI metrics are subject to credit balances, authentication checks, and rate-limiting thresholds.",
+      "AI features are not professional, legal, medical, financial, investment, election, or safety advice."
     ],
     categories: ["feature"]
+  },
+  {
+    title: "News, Article, and Publisher Content",
+    icon: FileText,
+    paragraphs: [
+      "NextNews aggregates and displays article metadata, images, excerpts, source names, links, and readable article content from external publishers and news APIs. Publisher content remains owned by the original publisher or rights holder.",
+      "Article pages may fetch original URLs to extract title, source, image, publish time, and article paragraphs for a focused reading experience. If extraction is incomplete, unavailable, or disputed, the original publisher link remains the authoritative source."
+    ],
+    bullets: [
+      "You should verify important facts, dates, claims, and source context with the original publication.",
+      "You may not copy, redistribute, scrape, or commercially reuse publisher content except where permitted by law or the rights holder.",
+      "External links may open third-party sites governed by their own terms, privacy policies, cookies, and advertising practices."
+    ],
+    categories: ["feature", "privacy-policies"]
+  },
+  {
+    title: "Article Views Display",
+    icon: Radio,
+    paragraphs: [
+      "NextNews may show a live-style Views count on article cards and article detail pages. In the current product version, this display is generated client-side from article metadata and animated for user experience.",
+      "The Views display is not a certified analytics metric, not a publisher-reported count, and not a guarantee of actual readers currently viewing the article."
+    ],
+    bullets: [
+      "The count may increase in visible decimal steps such as 15.6K, 15.7K, and 15.8K.",
+      "The blink animation is presentation-only and indicates that the displayed value changed.",
+      "NextNews may later replace this display with server-side aggregated view analytics."
+    ],
+    categories: ["feature", "privacy-policies"]
   },
   {
     title: "Video Integration Guidelines",
@@ -108,8 +141,13 @@ const termsSections: TermsSection[] = [
     title: "Subscription Tiers & Plans",
     icon: CreditCard,
     paragraphs: [
-      "We offer three tier classifications: Free, Pro, and Pro+. Plan tiers govern limits for AI summaries, personalized dashboard categories, and priority access parameters.",
-      "By subscribing to a paid tier, you agree to the billing cycles, costs, and terms disclosed during the checkout flow."
+      "We offer Free, Pro, and Pro+ access. Plan tiers govern API credits, AI summaries, personalized dashboard features, discovery features, and other entitlement checks shown in the product.",
+      "By activating a free plan or subscribing to a paid tier, you agree to the billing cycles, costs, renewal dates, credit rules, usage limits, and provider terms disclosed during the checkout or plan activation flow."
+    ],
+    bullets: [
+      "Free access may include a limited credit window and cooldown behavior.",
+      "Pro and Pro+ paid access can be monthly or yearly depending on the plan selected.",
+      "Plan status may be stored in Supabase and cached in browser storage to keep the app responsive."
     ],
     categories: ["billing", "events-plan"]
   },
@@ -126,8 +164,13 @@ const termsSections: TermsSection[] = [
     title: "Free Tier Credit Restraints",
     icon: CreditCard,
     paragraphs: [
-      "The Free tier includes a set quota of 600 API call credits for a 16-day period to access personalized feeds. Once exhausted, the Free plan enters a 30-day cooldown period.",
-      "During the cooldown, you will be restricted from querying personalized endpoints unless you upgrade to a paid subscription."
+      "The Free tier may include a set quota of 600 API call credits for a 16-day period to access eligible features. Separate AI usage logic may also apply stepped free limits, weighted usage, and cooldown windows before additional free usage becomes available.",
+      "During cooldowns or exhausted-limit states, you may be restricted from AI summaries, personalization suggestions, region suggestions, or other credit-gated endpoints unless you wait for eligibility to reset or upgrade to a paid subscription."
+    ],
+    bullets: [
+      "Free usage limits may consider article opens, AI usage, personalization actions, and other weighted engagement events.",
+      "Free limits and cooldown timing may change as the product scales or provider costs change.",
+      "Free credits have no cash value and are not redeemable, transferable, or refundable."
     ],
     categories: ["billing", "events-plan"]
   },
@@ -144,8 +187,13 @@ const termsSections: TermsSection[] = [
     title: "Cancellation and Upgrades",
     icon: CreditCard,
     paragraphs: [
-      "You can cancel your subscription or modify your plan tier at any time through the Billing settings. Cancellations will apply to the upcoming billing cycle.",
-      "Downgrades or cancellations will revert your access permissions to the Free tier once the active billing period expires."
+      "You can cancel or modify your plan where product controls and provider support allow it. Cancellation state is stored for entitlement purposes and may also be synchronized from Dodo Payments webhooks.",
+      "Current in-app cancellation may mark the subscription as canceled and update access immediately in the NextNews database. Provider-side billing cancellation, renewal behavior, refunds, and invoice handling may still be subject to Dodo Payments controls and support processes."
+    ],
+    bullets: [
+      "If there is a mismatch between app status and provider billing status, contact support promptly.",
+      "Downgrades, cancellations, expired plans, failed payments, or on-hold subscriptions may restrict premium access.",
+      "NextNews grants subscription access only after receiving valid provider confirmation such as a subscription.active webhook."
     ],
     categories: ["billing"]
   },
@@ -166,6 +214,34 @@ const termsSections: TermsSection[] = [
       "We reserve the right to modify, pause, or sunset specific features or news categories to resolve technical errors or comply with provider demands."
     ],
     categories: ["privacy-policies"]
+  },
+  {
+    title: "Personalization, Notes, and Activity Features",
+    icon: UserRound,
+    paragraphs: [
+      "Authenticated users may save notes, favorite sources, favorite topics, favorite regions, activity progress, weekly goals, reading streaks, and other product preferences. These features are provided for personal use and account convenience.",
+      "You are responsible for the content you enter into notes, support forms, settings, and profile fields. Do not store passwords, payment card numbers, government IDs, or sensitive third-party personal data inside note or support fields."
+    ],
+    bullets: [
+      "Notes are private to the authenticated account by default.",
+      "Activity metrics are product progress indicators and may be used for limits, dashboard statistics, and engagement features.",
+      "Personalization preferences influence what stories and discovery suggestions the app prioritizes."
+    ],
+    categories: ["feature", "account"]
+  },
+  {
+    title: "Support and Complaint Submissions",
+    icon: HeadphonesIcon,
+    paragraphs: [
+      "When you contact support or submit a complaint, you agree to provide accurate information and authorize NextNews to use the submitted details to investigate, respond, prevent abuse, and improve the service.",
+      "Support submissions may be rate-limited, validated, screened for spam, and stored in operational tools such as Google Sheets."
+    ],
+    bullets: [
+      "Submitting false, abusive, automated, or malicious support requests may result in blocking or account action.",
+      "Support responses are not guaranteed within a specific time unless a separate written service commitment applies.",
+      "Billing, privacy, deletion, and account questions can be sent to nextnews.co.in@gmail.com."
+    ],
+    categories: ["account", "privacy-policies"]
   },
   {
     title: "Limitation of Liability Cap",
@@ -209,21 +285,49 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   if (!query || !query.trim()) return <>{text}</>;
 
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escapedQuery})`, "gi"));
+  const matcher = new RegExp(escapedQuery, "gi");
+  const parts: { text: string; matches: boolean; start: number }[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = matcher.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        text: text.slice(lastIndex, match.index),
+        matches: false,
+        start: lastIndex,
+      });
+    }
+
+    parts.push({
+      text: match[0],
+      matches: true,
+      start: match.index,
+    });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({
+      text: text.slice(lastIndex),
+      matches: false,
+      start: lastIndex,
+    });
+  }
 
   return (
     <>
-      {parts.map((part, index) => {
-        const matches = part.toLowerCase() === query.toLowerCase();
-        return matches ? (
+      {parts.map((part) => {
+        return part.matches ? (
           <mark
-            key={index}
+            key={`match-${part.start}`}
             className="bg-[#bae6fd] text-[#0369a1] dark:bg-[#0284c7]/40 dark:text-[#e0f2fe] rounded-[2px] px-0.5"
           >
-            {part}
+            {part.text}
           </mark>
         ) : (
-          part
+          <span key={`text-${part.start}`}>{part.text}</span>
         );
       })}
     </>
@@ -233,12 +337,6 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 export default function TermsAndConditionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  const getArticlesCount = (categoryId: string) => {
-    return termsSections.filter((section) =>
-      section.categories.includes(categoryId)
-    ).length;
-  };
 
   const filteredSections = termsSections.filter((section) => {
     // 1. Filter by category if selected
