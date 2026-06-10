@@ -688,7 +688,7 @@ export default function AboutPage() {
                     ],
                   },
                   {
-                    name: "",
+                    name: "Jitesh Roy",
                     role: "",
                     img: "/about/developer.jpg",
                     socials: [
