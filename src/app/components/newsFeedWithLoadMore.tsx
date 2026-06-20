@@ -30,6 +30,7 @@ interface NewsFeedWithLoadMoreProps {
   pageSize?: number;
   emptyMessage?: string;
   apiUrl?: string;
+  showBreakingTicker?: boolean;
   breakingTickerLabel?: string;
   breakingTickerSubLabel?: string;
 }
@@ -81,6 +82,7 @@ export default function NewsFeedWithLoadMore({
   pageSize = 80,
   emptyMessage = "No news available right now.",
   apiUrl = "/api/news",
+  showBreakingTicker = true,
   breakingTickerLabel,
   breakingTickerSubLabel,
 }: NewsFeedWithLoadMoreProps) {
@@ -313,7 +315,7 @@ export default function NewsFeedWithLoadMore({
               category={category}
               showAiSummaryPromo={index === 0}
             />
-            {index === 1 && (
+            {showBreakingTicker && index === 1 && (
               <BreakingNewsTicker
                 category={category}
                 country="in"
