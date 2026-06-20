@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { X } from "lucide-react";
 import LottiePlayer from "./LottiePlayer";
@@ -9,33 +9,77 @@ const DOWNLOADED_KEY = "nextnews_app_downloaded";
 const DISMISSED_KEY = "nextnews_download_popup_dismissed_until";
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform?: string }>;
+};
+
+let downloadedFallback = false;
+let dismissedUntilFallback = 0;
+
+function readStorageValue(key: string) {
+  if (typeof window === "undefined") return null;
+
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorageValue(key: string, value: string) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Keep the component functional in browsers that block localStorage.
+  }
+}
+
+function markDownloaded() {
+  downloadedFallback = true;
+  writeStorageValue(DOWNLOADED_KEY, "true");
+}
+
+function dismissForOneDay() {
+  dismissedUntilFallback = Date.now() + ONE_DAY_MS;
+  writeStorageValue(DISMISSED_KEY, String(dismissedUntilFallback));
+}
+
+function shouldShowPopup() {
+  const isDownloaded =
+    downloadedFallback || readStorageValue(DOWNLOADED_KEY) === "true";
+  if (isDownloaded) return false;
+
+  const dismissedUntilRaw = readStorageValue(DISMISSED_KEY);
+  const dismissedUntil = dismissedUntilRaw
+    ? Number(dismissedUntilRaw)
+    : dismissedUntilFallback;
+
+  return Number.isFinite(dismissedUntil) && dismissedUntil > Date.now()
+    ? false
+    : true;
+}
+
 export default function DownloadNowPopup() {
   const [isVisible, setIsVisible] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    // Check if user has already downloaded or recently dismissed the popup
-    const isDownloaded = localStorage.getItem(DOWNLOADED_KEY) === "true";
-    const dismissedUntilRaw = localStorage.getItem(DISMISSED_KEY);
-    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0;
-
-    if (!isDownloaded && (!Number.isFinite(dismissedUntil) || dismissedUntil <= Date.now())) {
-      setIsVisible(true);
-    }
+    const syncVisibility = () => setIsVisible(shouldShowPopup());
+    const visibilityTimer = window.setTimeout(syncVisibility, 0);
 
     // Handle beforeinstallprompt event for PWA download functionality
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      // Ensure popup is shown if install prompt is available and not already downloaded
-      if (!isDownloaded && (!Number.isFinite(dismissedUntil) || dismissedUntil <= Date.now())) {
-        setIsVisible(true);
-      }
+      deferredPromptRef.current = e as BeforeInstallPromptEvent;
+      setIsVisible(shouldShowPopup());
     };
 
     // Handle standard browser install event detection
     const handleAppInstalled = () => {
-      localStorage.setItem(DOWNLOADED_KEY, "true");
+      markDownloaded();
       setIsVisible(false);
     };
 
@@ -43,38 +87,40 @@ export default function DownloadNowPopup() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
+      window.clearTimeout(visibilityTimer);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const handleDownload = async () => {
+    const deferredPrompt = deferredPromptRef.current;
+
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
-          localStorage.setItem(DOWNLOADED_KEY, "true");
+          markDownloaded();
           setIsVisible(false);
         }
       } catch (err) {
         console.warn("PWA installation prompt error:", err);
         // Fallback: mark as downloaded anyway on click
-        localStorage.setItem(DOWNLOADED_KEY, "true");
+        markDownloaded();
         setIsVisible(false);
       }
-      setDeferredPrompt(null);
+      deferredPromptRef.current = null;
     } else {
       // If deferredPrompt is not available (e.g. running in standalone mode or already installed),
       // fallback to marking as downloaded on button click
-      localStorage.setItem(DOWNLOADED_KEY, "true");
+      markDownloaded();
       setIsVisible(false);
     }
   };
 
   const handleClose = () => {
-    // Store dismissal timestamp for 1 day
-    localStorage.setItem(DISMISSED_KEY, String(Date.now() + ONE_DAY_MS));
+    dismissForOneDay();
     setIsVisible(false);
   };
 
