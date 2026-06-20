@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Calendar, ChevronRight, Tv2, Trophy } from "lucide-react";
-import UnderConstructionPopup from "./UnderConstructionPopup";
+import { getMatchDisplayName } from "@/lib/fifaData";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FifaMatchStatus = "LIVE" | "SCHEDULED" | "FINISHED" | "NO_LIVE_MATCH";
@@ -23,6 +24,7 @@ type FifaMatch = {
   eventDate?: string;
   source: string;
   message?: string;
+  group?: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -131,8 +133,6 @@ export default function FifaSection() {
     active: boolean;
     team: string | null;
   }>({ active: false, team: null });
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-
   const prevScoreRef = useRef<{
     homeScore: number;
     awayScore: number;
@@ -207,8 +207,6 @@ export default function FifaSection() {
     };
   }, [triggerGoal]);
 
-  const handleButtonClick = () => setIsPopupOpen(true);
-
   const isLive = match?.status === "LIVE";
   const isNoMatch =
     !match || match.status === "NO_LIVE_MATCH" || match.source === "no-live";
@@ -243,8 +241,7 @@ export default function FifaSection() {
   }
 
   return (
-    <>
-      <div
+    <div
         className="
           relative w-full rounded-3xl overflow-hidden mb-10
           bg-cover bg-center bg-no-repeat min-h-[300px] flex items-center
@@ -262,9 +259,9 @@ export default function FifaSection() {
           <div className="xl:col-span-7 2xl:col-span-8 flex flex-col items-stretch gap-5 xl:gap-0">
             {/* Mobile: cup + competition */}
             <div className="flex items-center gap-3 xl:hidden">
-              <div
-                className="shrink-0 cursor-pointer flex items-center"
-                onClick={handleButtonClick}
+              <Link
+                href="/fifa"
+                className="shrink-0 flex items-center"
               >
                 <Image
                   src="/fifaCup.jpg"
@@ -273,7 +270,7 @@ export default function FifaSection() {
                   height={48}
                   className="w-12 h-12 object-contain"
                 />
-              </div>
+              </Link>
               <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/25 to-transparent self-center mx-1" />
               <span className="text-[11px] sm:text-xs font-semibold tracking-wider text-slate-300/95 uppercase">
                 {match?.competition ?? "FIFA World Cup 2026"}
@@ -282,23 +279,23 @@ export default function FifaSection() {
 
             <div className="flex flex-col xl:flex-row items-start xl:items-center gap-6 xl:gap-0">
               {/* Desktop: cup image */}
-              <div
-                className="hidden xl:flex shrink-0 items-center justify-center pr-6 group cursor-pointer"
-                onClick={handleButtonClick}
+              <Link
+                href="/fifa"
+                className="hidden xl:flex shrink-0 items-center justify-center pr-6 group"
               >
                 <Image
                   src="/fifaCup.jpg"
                   alt="FIFA Cup"
                   width={88}
                   height={88}
-                  className="w-16 sm:w-20 md:w-[88px] h-auto object-contain transition-transform duration-500 hover:scale-105"
+                  className="w-16 sm:w-20 md:w-[88px] h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                 />
-              </div>
+              </Link>
               <div className="hidden xl:block w-px h-28 bg-gradient-to-b from-transparent via-white/25 to-transparent self-center mr-6" />
 
               <div className="flex-1 space-y-2.5 sm:space-y-3">
                 <span className="hidden xl:inline-block text-sm font-semibold tracking-wider text-slate-300/95 uppercase">
-                  {match?.competition ?? "FIFA World Cup 2026"}
+                  {getMatchDisplayName(match)}
                 </span>
                 <h2 className="text-[25px] sm:text-3xl xl:text-[40px] font-extrabold tracking-tight text-white drop-shadow-sm leading-tight">
                   It&apos;s Happening Now! ⚽
@@ -310,8 +307,8 @@ export default function FifaSection() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-2.5 xl:flex xl:flex-wrap xl:items-center xl:gap-4 pt-2 xl:pt-3.5 w-full">
-                  <button
-                    onClick={handleButtonClick}
+                  <Link
+                    href="/fifa"
                     className="
                       flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-3 xl:px-6 xl:py-3
                       rounded-xl text-[11px] sm:text-xs xl:text-sm font-bold text-white
@@ -326,10 +323,10 @@ export default function FifaSection() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                     </span>
-                  </button>
+                  </Link>
 
-                  <button
-                    onClick={handleButtonClick}
+                  <Link
+                    href="/fifa"
                     className="
                       flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-3 xl:px-6 xl:py-3
                       rounded-xl text-[11px] sm:text-xs xl:text-sm font-bold text-white
@@ -341,7 +338,7 @@ export default function FifaSection() {
                   >
                     <Calendar size={14} className="xl:w-4 xl:h-4 shrink-0" strokeWidth={2.2} />
                     <span>View Fixtures</span>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -413,9 +410,9 @@ export default function FifaSection() {
               ) : (
                 /* Live match scoreboard */
                 <div className="grid grid-cols-7 items-center justify-items-center text-center">
-                  <div
-                    className="col-span-2 flex flex-col items-center gap-2 group cursor-pointer"
-                    onClick={handleButtonClick}
+                  <Link
+                    href="/fifa"
+                    className="col-span-2 flex flex-col items-center gap-2 group"
                   >
                     <div className="h-12 w-12 rounded-full overflow-hidden border border-white/15 flex items-center justify-center bg-slate-900/50 p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-300 group-hover:scale-110 group-hover:border-white/35">
                       <TeamLogo logo={match!.homeLogo} team={match!.homeTeam} />
@@ -423,7 +420,7 @@ export default function FifaSection() {
                     <span className="text-xs font-bold text-slate-100 tracking-wide truncate max-w-[72px]">
                       {match!.homeTeam}
                     </span>
-                  </div>
+                  </Link>
 
                   <div className="col-span-3 flex flex-col items-center justify-center">
                     <span className="text-3xl font-black tracking-wider text-white drop-shadow-sm tabular-nums flex items-center gap-1.5">
@@ -436,9 +433,9 @@ export default function FifaSection() {
                     </span>
                   </div>
 
-                  <div
-                    className="col-span-2 flex flex-col items-center gap-2 group cursor-pointer"
-                    onClick={handleButtonClick}
+                  <Link
+                    href="/fifa"
+                    className="col-span-2 flex flex-col items-center gap-2 group"
                   >
                     <div className="h-12 w-12 rounded-full overflow-hidden border border-white/15 flex items-center justify-center bg-slate-900/50 p-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-300 group-hover:scale-110 group-hover:border-white/35">
                       <TeamLogo logo={match!.awayLogo} team={match!.awayTeam} />
@@ -446,12 +443,12 @@ export default function FifaSection() {
                     <span className="text-xs font-bold text-slate-100 tracking-wide truncate max-w-[72px]">
                       {match!.awayTeam}
                     </span>
-                  </div>
+                  </Link>
                 </div>
               )}
 
-              <button
-                onClick={handleButtonClick}
+              <Link
+                href="/fifa"
                 className="w-full mt-4 pt-3.5 border-t border-white/10 flex items-center justify-center gap-1 text-xs font-bold text-indigo-300 hover:text-indigo-200 transition-colors group"
               >
                 See All Live Matches
@@ -459,16 +456,10 @@ export default function FifaSection() {
                   size={14}
                   className="transition-transform duration-200 group-hover:translate-x-0.5"
                 />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       </div>
-
-      <UnderConstructionPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-      />
-    </>
   );
 }
