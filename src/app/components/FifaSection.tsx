@@ -20,12 +20,14 @@ type FifaMatch = {
   homeLogo: string | null;
   awayLogo: string | null;
   updatedAt: string;
+  eventDate?: string;
   source: string;
   message?: string;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getMatchClock(match: FifaMatch): string {
+  if (match.status === "SCHEDULED") return "VS";
   if (match.status === "FINISHED") return "FT";
   if (match.status === "NO_LIVE_MATCH") return "—";
   if (
@@ -35,6 +37,42 @@ function getMatchClock(match: FifaMatch): string {
     return "HT";
   if (typeof match.minute === "number") return `${match.minute}'`;
   return "LIVE";
+}
+
+function formatMatchDate(dateStr?: string): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+
+    const now = new Date();
+
+    const isSameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(now.getDate() + 1);
+
+    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    if (isSameDay(d, now)) {
+      return `Today, ${timeStr}`;
+    } else if (isSameDay(d, yesterday)) {
+      return `Yesterday, ${timeStr}`;
+    } else if (isSameDay(d, tomorrow)) {
+      return `Tomorrow, ${timeStr}`;
+    } else {
+      const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+      return `${d.toLocaleDateString([], options)}, ${timeStr}`;
+    }
+  } catch {
+    return "";
+  }
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -60,7 +98,7 @@ function TeamLogo({ logo, team }: { logo: string | null; team: string }) {
     );
   }
 
-  if (team === "—") {
+  if (team === "—" || team === "-") {
     return (
       <span className="flex h-full w-full items-center justify-center rounded-md bg-white/10 text-base text-white/40">
         ?
@@ -109,10 +147,18 @@ export default function FifaSection() {
 
   useEffect(() => {
     let mounted = true;
+    let timer: number | undefined;
+    let controller: AbortController | null = null;
 
     async function poll() {
+      controller?.abort();
+      controller = new AbortController();
+
       try {
-        const res = await fetch(`/api/fifa-live?t=${Date.now()}`, { cache: "no-store" });
+        const res = await fetch("/api/fifa-live", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!mounted) return;
 
         if (!res.ok) {
@@ -142,18 +188,22 @@ export default function FifaSection() {
         };
 
         setMatch(next);
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
         if (mounted) setFetchError(true);
       } finally {
         if (mounted) setIsLoading(false);
+        if (mounted) timer = window.setTimeout(poll, 30_000);
       }
     }
 
     poll();
-    const timer = window.setInterval(poll, 30_000);
     return () => {
       mounted = false;
-      window.clearInterval(timer);
+      controller?.abort();
+      if (timer) window.clearTimeout(timer);
     };
   }, [triggerGoal]);
 
@@ -163,12 +213,34 @@ export default function FifaSection() {
   const isNoMatch =
     !match || match.status === "NO_LIVE_MATCH" || match.source === "no-live";
 
-  const badgeLabel = isLive ? "LIVE" : "UPDATES";
-  const stageLabel = isLoading
-    ? "Fetching match…"
-    : isNoMatch
-      ? "No live match right now"
-      : (match?.stage ?? "Live");
+  let badgeLabel = "UPDATES";
+  let badgeClasses = "bg-white/10 text-slate-400 border-white/5";
+  if (isLive) {
+    badgeLabel = "LIVE";
+    badgeClasses = "bg-red-500/20 text-red-400 border-red-500/20";
+  } else if (match?.status === "SCHEDULED") {
+    badgeLabel = "UPCOMING";
+    badgeClasses = "bg-amber-500/20 text-amber-400 border-amber-500/20";
+  } else if (match?.status === "FINISHED") {
+    badgeLabel = "FINISHED";
+    badgeClasses = "bg-emerald-500/20 text-emerald-400 border-emerald-500/20";
+  }
+
+  let stageLabel = "Live";
+  if (isLoading) {
+    stageLabel = "Fetching match…";
+  } else if (isNoMatch) {
+    stageLabel = "No matches scheduled";
+  } else if (match) {
+    if (match.status === "SCHEDULED") {
+      stageLabel = formatMatchDate(match.eventDate) || match.stage || "Upcoming";
+    } else if (match.status === "FINISHED") {
+      const dateText = formatMatchDate(match.eventDate);
+      stageLabel = dateText ? `Finished - ${dateText}` : "Finished";
+    } else {
+      stageLabel = match.stage || "Live";
+    }
+  }
 
   return (
     <>
@@ -301,8 +373,8 @@ export default function FifaSection() {
 
               {/* Card header: badge + stage */}
               <div className="flex items-center justify-between border-b border-white/10 pb-3.5 mb-4">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 px-2.5 py-0.5 text-[10px] font-bold text-red-400 border border-red-500/20">
-                  <LivePulse />
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${badgeClasses}`}>
+                  {isLive && <LivePulse />}
                   {badgeLabel}
                 </span>
                 <span className="inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-semibold text-slate-200 border border-white/5 truncate max-w-[160px]">
