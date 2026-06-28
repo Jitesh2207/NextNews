@@ -138,7 +138,7 @@ export async function GET(req: Request) {
     const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
     const pageSize =
       Number.isFinite(rawPageSize) && rawPageSize > 0
-        ? Math.min(rawPageSize, 100)
+        ? Math.min(rawPageSize, 80)
         : 20;
 
     const baseUrl =
@@ -156,7 +156,6 @@ export async function GET(req: Request) {
       language: "en",
       page_number: String(page),
       page_size: String(pageSize),
-      apiKey,
     });
 
     if (country) {
@@ -169,6 +168,8 @@ export async function GET(req: Request) {
 
     const url = `${baseUrl}/latest-news?${params.toString()}`;
     const res = await fetch(url, { 
+      // Pass API key via Authorization header (recommended by Currents API docs)
+      headers: { Authorization: apiKey },
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(10000) // 10s timeout
     });

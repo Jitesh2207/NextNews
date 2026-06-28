@@ -170,15 +170,16 @@ async function fetchCurrentsHeadlineSources() {
   if (!apiKey) return [] as PersonalizationSource[];
 
   const params = new URLSearchParams({
-    apiKey,
     language: "en",
     page_number: "1",
-    page_size: "40",
+    page_size: "20",
   });
 
   const response = await fetch(
     `https://api.currentsapi.services/v1/latest-news?${params}`,
     {
+      // Pass API key via Authorization header (recommended by Currents API docs)
+      headers: { Authorization: apiKey },
       next: { revalidate: 60 * 60 },
       signal: AbortSignal.timeout(10000),
     },
