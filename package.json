@@ -34,6 +34,7 @@
     "googleapis": "^171.4.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "next-sitemap": "^4.2.3",

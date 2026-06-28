@@ -3,6 +3,7 @@ import WeeklyRoundup from "./components/weeklyRoundup/WeeklyRoundup";
 import TopHeadlinesContent from "./components/topHeadlinesContent";
 import NewsStatsTicker from "./components/newsStatsTicker";
 import FifaSection from "./components/FifaSection";
+import EmptyState from "./components/EmptyState";
 
 // 1. Define types matching your API response
 interface Article {
@@ -76,17 +77,23 @@ async function getNews(): Promise<Article[]> {
     const params = new URLSearchParams({
       language: "en",
       page_number: "1",
-      page_size: "40",
-      apiKey,
+      page_size: "20",
     });
 
     const res = await fetch(`${baseUrl}/latest-news?${params.toString()}`, {
+      // Pass API key via Authorization header (recommended by Currents API docs)
+      headers: { Authorization: apiKey },
       // Revalidate every hour (3600 seconds)
       next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch news: ${res.status} ${res.statusText}`);
+      const errBody = await res.json().catch(() => ({}));
+      console.error("Server| API Error Response:", errBody);
+      console.error("Server| Request URL:", `${baseUrl}/latest-news`);
+      throw new Error(
+        `Failed to fetch news: ${res.status} ${res.statusText}`,
+      );
     }
 
     const data: NewsResponse = await res.json();
@@ -108,12 +115,7 @@ export default async function Home() {
   if (!articles || articles.length === 0) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-[#0B0F19]">
-        <div className="max-w-md">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">News Feed</h1>
-          <p className="text-slate-600">
-            No news available at the moment. Please check back later.
-          </p>
-        </div>
+        <EmptyState />
         <RegisterReminder />
       </main>
     );
